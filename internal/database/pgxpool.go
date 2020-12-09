@@ -4,21 +4,21 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
-	config "github.com/paul-ss/forum-api/configs"
+	"github.com/paul-ss/forum-api/configs/go"
 )
 
-type DB struct {
+type PgxPool struct {
 	dbPool *pgxpool.Pool
 	config *config.ConfDB
 }
 
-func NewDB() *DB {
-	return &DB{
+func NewDB() *PgxPool {
+	return &PgxPool{
 		config: &config.Conf.Db,
 	}
 }
 
-func (db *DB) Open() error {
+func (db *PgxPool) Open() error {
 	conf, err := pgxpool.ParseConfig(fmt.Sprintf(
 		"user=%s password=%s host=%s dbname=%s sslmode=%s pool_max_conns=%s",
 		db.config.Postgres.Username,
@@ -40,7 +40,7 @@ func (db *DB) Open() error {
 	return nil
 }
 
-func (db *DB) Close() {
+func (db *PgxPool) Close() {
 	db.dbPool.Close()
 }
 

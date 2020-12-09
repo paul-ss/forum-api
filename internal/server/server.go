@@ -4,24 +4,18 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
-
-	config "github.com/paul-ss/forum-api/configs"
-
+	"github.com/paul-ss/forum-api/configs/go"
 
 	log "github.com/sirupsen/logrus"
-	"io"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
-
-
 )
 
 type Server struct {
-	logFile *os.File
+	ctx *Context
 	server  *http.Server
 }
 
@@ -29,21 +23,15 @@ type Server struct {
 
 
 func New() *Server {
-
-	logFile := setupGinLogger()
+	ctx := NewContext()
 
 	r := gin.Default()
 	r.MaxMultipartMemory = 8 << 20
 	r.Static(config.Conf.Web.Static.UrlImg, config.Conf.Web.Static.DirImg)
 
 
-
-
-
-
-
 	return &Server{
-		logFile: logFile,
+		ctx: ctx,
 		server: &http.Server{
 			Addr:    fmt.Sprintf("%s:%s", config.Conf.Web.Server.Address, config.Conf.Web.Server.Port),
 			Handler: r,
@@ -52,7 +40,7 @@ func New() *Server {
 }
 
 func (s *Server) Run() {
-	defer s.logFile.Close()
+	defer s.ctx.Cleanup()
 
 	go func() {
 		if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -74,28 +62,4 @@ func (s *Server) Run() {
 	}
 }
 
-func setupGinLogger() *os.File {
-	switch strings.ToLower(config.Conf.Logger.GinLevel) {
-	case "release":
-		gin.SetMode(gin.ReleaseMode)
-	case "test":
-		gin.SetMode(gin.TestMode)
-	case "debug":
-		gin.SetMode(gin.DebugMode)
-	default:
-		gin.SetMode(gin.DebugMode)
-	}
 
-	if !config.Conf.Logger.StdoutLog {
-		file, err := os.OpenFile(config.Conf.Logger.GinFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			config.Lg("server", "setupGinLogger").Fatal("Failed to log to file, using default stderr")
-			return nil
-		}
-
-		gin.DefaultWriter = io.MultiWriter(file)
-		return file
-	} else {
-		return nil
-	}
-}

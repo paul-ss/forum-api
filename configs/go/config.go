@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"github.com/jackc/pgx"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
@@ -11,7 +10,6 @@ import (
 
 var (
 	Conf *Config
-	Db   *pgx.Conn
 )
 
 type Config struct {
