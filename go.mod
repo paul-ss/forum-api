@@ -1,3 +1,11 @@
-module github.com/YOUR-USER-OR-ORG-NAME/YOUR-REPO-NAME
+module github.com/paul-ss/forum-api
 
 go 1.14
+
+require (
+	github.com/gin-gonic/gin v1.6.3
+	github.com/go-park-mail-ru/2020_2_Eternity v0.0.0-20201202134529-7bc6da863f51
+	github.com/microcosm-cc/bluemonday v1.0.4
+	github.com/sirupsen/logrus v1.7.0
+	google.golang.org/grpc v1.34.0
+)
