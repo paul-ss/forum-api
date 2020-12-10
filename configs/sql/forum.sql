@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS forums (
     description text,
     id serial PRIMARY KEY NOT NULL,
+
     title text NOT NULL,
     user_nickname text NOT NULL,
     slug text NOT NULL UNIQUE,
@@ -30,7 +31,7 @@ CREATE TABLE IF NOT EXISTS threads (
     forum_id integer NOT NULL,
 
     message text NOT NULL,
-    votes integer DEFAULT 0,
+    votes integer DEFAULT 0, -- trigger
     slug text, --optional
     created timestamp DEFAULT NOW(),
 
@@ -59,4 +60,10 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY author REFERENCES users(nickname),
     FOREIGN KEY forum_id REFERENCES forums(id),
     FOREIGN KEY thread_id REFERENCES threads(id)
+);
+
+CREATE TABLE IF NOT EXISTS votes (
+    nickname text NOT NULL,
+    voice integer NOT NULL,
+    FOREIGN KEY nickname REFERENCES users(nickname)
 );
