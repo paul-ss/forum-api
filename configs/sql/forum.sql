@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS forums (
     posts bigint DEFAULT 0,
     threads	integer DEFAULT 0,
 
-    FOREIGN KEY user_nickname REFERENCES users(nickname)
+    FOREIGN KEY (user_nickname) REFERENCES users(nickname)
 );
 
 CREATE TABLE IF NOT EXISTS threads (
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS threads (
     slug text, --optional
     created timestamp DEFAULT NOW(),
 
-    FOREIGN KEY author REFERENCES users(nickname),
-    FOREIGN KEY forum_id REFERENCES forums(id)
+    FOREIGN KEY (author) REFERENCES users(nickname),
+    FOREIGN KEY (forum_id) REFERENCES forums(id)
 );
 
 
@@ -48,22 +48,22 @@ CREATE TABLE IF NOT EXISTS posts (
     parent_id bigint NOT NULL, -- tree
     author text NOT NULL, -- fk
 
-    messagetext NOT NULL,
+    message text NOT NULL,
     isEdited bool NOT NULL DEFAULT false,
 
-    forum string, -- slug
+    forum text, -- slug
     forum_id integer NOT NULL,
 
     thread_id integer NOT NULL, --fk
     created timestamp DEFAULT NOW(),
 
-    FOREIGN KEY author REFERENCES users(nickname),
-    FOREIGN KEY forum_id REFERENCES forums(id),
-    FOREIGN KEY thread_id REFERENCES threads(id)
+    FOREIGN KEY (author) REFERENCES users(nickname),
+    FOREIGN KEY (forum_id) REFERENCES forums(id),
+    FOREIGN KEY (thread_id) REFERENCES threads(id)
 );
 
 CREATE TABLE IF NOT EXISTS votes (
     nickname text NOT NULL,
     voice integer NOT NULL,
-    FOREIGN KEY nickname REFERENCES users(nickname)
+    FOREIGN KEY (nickname) REFERENCES users(nickname)
 );
