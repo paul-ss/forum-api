@@ -35,46 +35,28 @@ CREATE TABLE IF NOT EXISTS threads (
     created timestamp DEFAULT NOW(),
 
     FOREIGN KEY author REFERENCES users(nickname),
-    FOREIGN KEY forum_id REFERENCES forums(id),
+    FOREIGN KEY forum_id REFERENCES forums(id)
 );
 
 
 CREATE TABLE IF NOT EXISTS posts (
-description:
-Сообщение внутри ветки обсуждения на форуме.
+    description text,
+    id bigserial PRIMARY KEY NOT NULL,
+    path bigint[] NOT NULL,
 
-id	number($int64)
-readOnly: true
-Идентификатор данного сообщения.
+    parent_id bigint NOT NULL, -- tree
+    author text NOT NULL, -- fk
 
-parent	number($int64)
-Идентификатор родительского сообщения (0 - корневое сообщение обсуждения).
+    messagetext NOT NULL,
+    isEdited bool NOT NULL DEFAULT false,
 
-author*	string($identity)
-example: j.sparrow
-x-isnullable: false
-Автор, написавший данное сообщение.
+    forum string, -- slug
+    forum_id integer NOT NULL,
 
-message*	string($text)
-example: We should be afraid of the Kraken.
-x-isnullable: false
-Собственно сообщение форума.
+    thread_id integer NOT NULL, --fk
+    created timestamp DEFAULT NOW(),
 
-isEdited	boolean
-readOnly: true
-x-isnullable: false
-Истина, если данное сообщение было изменено.
-
-forum	string($identity)
-readOnly: true
-Идентификатор форума (slug) данного сообещния.
-
-thread	number($int32)
-readOnly: true
-Идентификатор ветви (id) обсуждения данного сообещния.
-
-created	string($date-time)
-readOnly: true
-x-isnullable: true
-Дата создания сообщения на форуме.
+    FOREIGN KEY author REFERENCES users(nickname),
+    FOREIGN KEY forum_id REFERENCES forums(id),
+    FOREIGN KEY thread_id REFERENCES threads(id)
 );
