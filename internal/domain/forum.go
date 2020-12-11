@@ -1,7 +1,7 @@
 package domain
 
 type Forum struct {
-	Description string `json:"description"`
+	Id int32 `json:"-"`
 	Title string `json:"tittle"`
 	User string `json:"user"`
 	Slug string `json:"slug"`

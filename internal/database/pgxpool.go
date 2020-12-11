@@ -8,7 +8,7 @@ import (
 )
 
 type PgxPool struct {
-	dbPool *pgxpool.Pool
+	DbPool *pgxpool.Pool
 	config *config.ConfDB
 }
 
@@ -32,7 +32,7 @@ func (db *PgxPool) Open() error {
 		return err
 	}
 
-	db.dbPool, err = pgxpool.ConnectConfig(context.Background(), conf)
+	db.DbPool, err = pgxpool.ConnectConfig(context.Background(), conf)
 
 	if err != nil {
 		return err
@@ -41,6 +41,6 @@ func (db *PgxPool) Open() error {
 }
 
 func (db *PgxPool) Close() {
-	db.dbPool.Close()
+	db.DbPool.Close()
 }
 

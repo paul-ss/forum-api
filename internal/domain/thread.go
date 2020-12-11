@@ -3,7 +3,6 @@ package domain
 import "time"
 
 type Thread struct {
-	Description string `json:"description"`
 	Id int32 `json:"id"`
 	Title string `json:"title"`
 	Author string `json:"author"`
@@ -15,7 +14,6 @@ type Thread struct {
 }
 
 type ThreadUpdate struct {
-	Description string `json:"description"`
 	Title string `json:"title"`
 	Message string `json:"message"`
 }

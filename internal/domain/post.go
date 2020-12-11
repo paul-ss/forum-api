@@ -5,7 +5,6 @@ import (
 )
 
 type Post struct {
-	Description string `json:"description"`
 	Id int64 `json:"id"`
 	Parent int64 `json:"parent"`
 	Author string `json:"author"`
