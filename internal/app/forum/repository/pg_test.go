@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
-	"github.com/paul-ss/forum-api/internal/domain"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
@@ -39,20 +37,31 @@ func TestMain(m *testing.M) {
 
 
 
-func TestStore(t *testing.T) {
-	r := New(db)
+//func TestStore(t *testing.T) {
+//	r := New(db)
+//
+//	f := domain.Forum{
+//		User: "username2",
+//		Title: "f_title2",
+//		Slug: "slug",
+//	}
+//
+//	fres, err := r.StoreForum(&f)
+//
+//	assert.Nil(t, err)
+//	fmt.Println(fres)
+//
+//}
 
-	f := domain.Forum{
-		User: "username",
-		Title: "f_title",
-		Slug: "slug",
-	}
-
-	fres, err := r.StoreForum(&f)
-
-	assert.Nil(t, err)
-	fmt.Println(fres)
-
-}
+//func TestGet(t *testing.T) {
+//	r := New(db)
+//
+//
+//	fres, err := r.GetForumBySlug("superslug")
+//
+//	assert.Nil(t, err)
+//	fmt.Println(fres)
+//
+//}
 
 
