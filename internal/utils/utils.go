@@ -17,3 +17,10 @@ func GetCurrentTime(t time.Time) time.Time {
 
 	return t
 }
+
+func DESC(d bool) string {
+	if d {
+		return " DESC "
+	}
+	return " "
+}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
+	"github.com/paul-ss/forum-api/internal/domain/query"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
@@ -81,3 +83,19 @@ func TestMain(m *testing.M) {
 //	assert.Nil(t, err)
 //	fmt.Println(thr)
 //}
+
+func TestGetUsers(t *testing.T) {
+	r := New(db)
+
+	q := query.GetForumUsers{
+		Limit: 5,
+		Since: "usernam",
+		Desc: true,
+	}
+
+	us, err := r.GetUsers("superslug", &q)
+
+
+	assert.Nil(t, err)
+	fmt.Println(us)
+}

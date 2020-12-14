@@ -6,6 +6,7 @@ import (
 	config "github.com/paul-ss/forum-api/configs/go"
 	"github.com/paul-ss/forum-api/internal/domain"
 	domainErr "github.com/paul-ss/forum-api/internal/domain/errors"
+	query "github.com/paul-ss/forum-api/internal/domain/query"
 	"github.com/paul-ss/forum-api/internal/utils"
 )
 
@@ -90,4 +91,43 @@ func (r *Repository) StoreThread(slug string, tc domain.ThreadCreate) (*domain.T
 	}
 
 	return &t, nil
+}
+
+func (r *Repository) GetUsers(slug string, q *query.GetForumUsers) ([]domain.User, error) {
+	rows, err := r.db.Query(context.Background(),
+		"WITH f AS (SELECT title, id FROM forums WHERE slug = $1) " +
+		"SELECT u.nickname, u.fullname, u.about, u.email " +
+		"FROM " +
+		"(SELECT DISTINCT author FROM threads WHERE forum_id = (SELECT id from f) " +
+		"UNION " +
+		"SELECT DISTINCT author FROM posts WHERE forum_id = (SELECT id from f)) AS a " +
+		"JOIN users u ON a.author = u.nickname " +
+		"WHERE lower(nickname) > lower ($2)" +
+		"ORDER BY lower(nickname) " + utils.DESC(q.Desc) +
+		"LIMIT ($3) ",
+		slug, q.Since, q.Limit)
+
+	// NOTE: maybe if it's DESC, you should change > to < ?
+
+	if err != nil {
+		config.Lg("forum_repo", "GetUsers").Error("Query: ", err.Error())
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	users := []domain.User{}
+	for rows.Next() {
+		u := domain.User{}
+
+		err := rows.Scan(&u.Nickname, &u.FullName, &u.About, &u.Email)
+		if err != nil {
+			config.Lg("forum_repo", "GetUsers").Error("Scan: ", err.Error())
+			return nil, err
+		}
+
+		users = append(users, u)
+	}
+
+	return users, nil
 }
