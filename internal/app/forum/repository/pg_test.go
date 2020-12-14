@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+	"time"
 )
 
 var db *pgxpool.Pool
@@ -84,16 +85,33 @@ func TestMain(m *testing.M) {
 //	fmt.Println(thr)
 //}
 
-func TestGetUsers(t *testing.T) {
+//func TestGetUsers(t *testing.T) {
+//	r := New(db)
+//
+//	q := query.GetForumUsers{
+//		Limit: 0,
+//		Since: "usernam",
+//		Desc: true,
+//	}
+//
+//
+//	us, err := r.GetUsers("superslug", &q)
+//
+//
+//	assert.Nil(t, err)
+//	fmt.Println(us)
+//}
+
+func TestGetThreads(t *testing.T) {
 	r := New(db)
 
-	q := query.GetForumUsers{
-		Limit: 5,
-		Since: "usernam",
-		Desc: true,
+	q := query.GetForumThreads{
+		Limit: 10,
+		Since: time.Now(),
+		Desc: false,
 	}
 
-	us, err := r.GetUsers("superslug", &q)
+	us, err := r.GetThreads("superslu", &q)
 
 
 	assert.Nil(t, err)

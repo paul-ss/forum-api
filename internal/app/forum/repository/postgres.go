@@ -94,6 +94,21 @@ func (r *Repository) StoreThread(slug string, tc domain.ThreadCreate) (*domain.T
 }
 
 func (r *Repository) GetUsers(slug string, q *query.GetForumUsers) ([]domain.User, error) {
+	count := 0
+	if err := r.db.QueryRow(context.Background(),
+		"SELECT COUNT(1) " +
+			"FROM forums " +
+			"WHERE slug = $1", slug).Scan(&count); err != nil {
+
+		config.Lg("forum_repo", "GetUsers").Error("Query1: ", err.Error())
+		return nil, err
+	}
+
+	if count == 0 {
+		config.Lg("forum_repo", "GetUsers").Error("Query1: count == 0")
+		return nil, domainErr.NotExists
+	}
+
 	rows, err := r.db.Query(context.Background(),
 		"WITH f AS (SELECT title, id FROM forums WHERE slug = $1) " +
 		"SELECT u.nickname, u.fullname, u.about, u.email " +
@@ -130,4 +145,55 @@ func (r *Repository) GetUsers(slug string, q *query.GetForumUsers) ([]domain.Use
 	}
 
 	return users, nil
+}
+
+
+func (r *Repository) GetThreads(slug string, q *query.GetForumThreads) ([]domain.Thread, error) {
+	count := 0
+	if err := r.db.QueryRow(context.Background(),
+		"SELECT COUNT(1) " +
+		"FROM forums " +
+		"WHERE slug = $1", slug).Scan(&count); err != nil {
+
+		config.Lg("forum_repo", "GetThreads").Error("Query1: ", err.Error())
+		return nil, err
+	}
+
+	if count == 0 {
+		config.Lg("forum_repo", "GetUsers").Error("Query1: count == 0")
+		return nil, domainErr.NotExists
+	}
+
+	rows, err := r.db.Query(context.Background(),
+		"WITH f AS (SELECT id FROM forums WHERE slug = $1) " +
+			"SELECT id, title, author, forum_title, message, votes, slug, created " +
+			"FROM threads " +
+			"WHERE forum_id = (SELECT id FROM f) AND created > $2 " +
+			"ORDER BY created " + utils.DESC(q.Desc) +
+			"LIMIT $3 ",
+		slug, q.Since, q.Limit)
+
+	// NOTE: maybe if it's DESC, you should change > to < ?
+
+	if err != nil {
+		config.Lg("forum_repo", "GetThreads").Error("Query2: ", err.Error())
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	threads := []domain.Thread{}
+	for rows.Next() {
+		t := domain.Thread{}
+
+		err := rows.Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created)
+		if err != nil {
+			config.Lg("forum_repo", "GetThreads").Error("Scan: ", err.Error())
+			return nil, err
+		}
+
+		threads = append(threads, t)
+	}
+
+	return threads, nil
 }
