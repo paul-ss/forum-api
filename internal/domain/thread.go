@@ -13,6 +13,13 @@ type Thread struct {
 	Created time.Time `json:"created"`
 }
 
+type ThreadCreate struct {
+	Title string `json:"title"`
+	Author string `json:"author"`
+	Message string `json:"message"`
+	Created time.Time `json:"created"`
+}
+
 type ThreadUpdate struct {
 	Title string `json:"title"`
 	Message string `json:"message"`

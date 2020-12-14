@@ -64,4 +64,20 @@ func TestMain(m *testing.M) {
 //
 //}
 
-
+//
+//func TestStoreThread(t *testing.T) {
+//	r := New(db)
+//
+//	th := domain.ThreadCreate{
+//		Title: "thread_title",
+//		Author: "username",
+//		Message: "msg",
+//		//Created: time.Now().Add(time.Hour),
+//
+//	}
+//
+//	thr, err := r.StoreThread("superslu", th)
+//
+//	assert.Nil(t, err)
+//	fmt.Println(thr)
+//}
