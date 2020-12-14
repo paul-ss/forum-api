@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS posts (
     message text NOT NULL,
     isEdited bool NOT NULL DEFAULT false,
 
-    forum text, -- slug
+    forum_slug text, -- slug
     forum_id integer NOT NULL,
 
     thread_id integer NOT NULL, --fk

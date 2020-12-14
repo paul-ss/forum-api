@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
-	"github.com/paul-ss/forum-api/internal/domain/query"
+	"github.com/paul-ss/forum-api/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
-	"time"
 )
 
 var db *pgxpool.Pool
@@ -38,82 +37,48 @@ func TestMain(m *testing.M) {
 
 
 
-
-
-//func TestStore(t *testing.T) {
+//func TestGetPost(t *testing.T) {
 //	r := New(db)
 //
-//	f := domain.ForumSlug{
-//		User: "username2",
-//		Title: "f_title2",
-//		Slug: "slug",
-//	}
-//
-//	fres, err := r.StoreForum(&f)
+//	p, err := r.GetPost(6)
 //
 //	assert.Nil(t, err)
-//	fmt.Println(fres)
-//
+//	fmt.Println(p)
 //}
 
-//func TestGet(t *testing.T) {
+
+//func TestGetAuthor(t *testing.T) {
 //	r := New(db)
 //
-//
-//	fres, err := r.GetForumBySlug("superslug")
+//	p, err := r.GetAuthor(1)
 //
 //	assert.Nil(t, err)
-//	fmt.Println(fres)
-//
+//	fmt.Println(p)
 //}
 
-//
-//func TestStoreThread(t *testing.T) {
+//func TestGetThread(t *testing.T) {
 //	r := New(db)
 //
-//	th := domain.ThreadCreate{
-//		Title: "thread_title",
-//		Author: "username",
-//		Message: "msg",
-//		//Created: time.Now().Add(time.Hour),
-//
-//	}
-//
-//	thr, err := r.StoreThread("superslu", th)
+//	p, err := r.GetThread(3)
 //
 //	assert.Nil(t, err)
-//	fmt.Println(thr)
+//	fmt.Println(p)
 //}
 
-//func TestGetUsers(t *testing.T) {
+//func TestGetForum(t *testing.T) {
 //	r := New(db)
 //
-//	q := query.GetForumUsers{
-//		Limit: 0,
-//		Since: "usernam",
-//		Desc: true,
-//	}
-//
-//
-//	us, err := r.GetUsers("superslug", &q)
-//
+//	p, err := r.GetForum(1)
 //
 //	assert.Nil(t, err)
-//	fmt.Println(us)
+//	fmt.Println(p)
 //}
 
-func TestGetThreads(t *testing.T) {
+func TestUpdPost(t *testing.T) {
 	r := New(db)
 
-	q := query.GetForumThreads{
-		Limit: 10,
-		Since: time.Now(),
-		Desc: false,
-	}
-
-	us, err := r.GetThreads("superslu", &q)
-
+	p, err := r.UpdatePost(4, &domain.PostUpdate{Message: "upd"})
 
 	assert.Nil(t, err)
-	fmt.Println(us)
+	fmt.Println(p)
 }

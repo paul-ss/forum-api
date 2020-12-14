@@ -5,14 +5,14 @@ import (
 )
 
 type Post struct {
-	Id int64 `json:"id"`
-	Parent int64 `json:"parent"`
-	Author string `json:"author"`
-	Message string `json:"message"`
-	IsEdited bool `json:"isEdited"`
-	Forum string `json:"forum"`
-	ThreadId int32 `json:"thread"`
-	Created time.Time `json:"created"`
+	Id        int64     `json:"id"`
+	Parent    int64     `json:"parent"`
+	Author    string    `json:"author"`
+	Message   string    `json:"message"`
+	IsEdited  bool      `json:"isEdited"`
+	ForumSlug string    `json:"forum"`
+	ThreadId  int32     `json:"thread"`
+	Created   time.Time `json:"created"`
 }
 
 type PostUpdate struct {

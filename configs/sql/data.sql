@@ -21,4 +21,4 @@ values
 
 insert into posts (id, path, parent_id, author, message, forum_id, thread_id)
 values
-(1, '{1}', 0, 'username', 'my_message', 1, 1);
+(1, '{0, 1}', 0, 'username', 'my_message', 1, 1);
