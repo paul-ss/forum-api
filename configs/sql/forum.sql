@@ -43,10 +43,10 @@ CREATE INDEX ON threads (forum_id, author);
 
 
 CREATE TABLE IF NOT EXISTS posts (
-    id bigserial PRIMARY KEY NOT NULL,
+    id bigserial PRIMARY KEY,
     path bigint[] NOT NULL,
 
-    parent_id bigint NOT NULL, -- tree
+    parent_id bigint, --  extra?
     author text NOT NULL, -- fk
 
     message text NOT NULL,
@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (forum_id) REFERENCES forums(id),
     FOREIGN KEY (thread_id) REFERENCES threads(id)
 );
+--ALTER TABLE posts ALTER "id" SET DEFAULT nextval('posts_id_seq'::regclass);
 CREATE INDEX ON posts (forum_id, author);
 
 
