@@ -13,3 +13,10 @@ type GetForumThreads struct{
 	Since time.Time
 	Desc bool
 }
+
+type GetThreadPosts struct{
+	Limit int32
+	Since int64
+	Sort string
+	Desc bool
+}

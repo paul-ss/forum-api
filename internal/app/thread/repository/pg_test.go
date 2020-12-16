@@ -37,28 +37,48 @@ func TestMain(m *testing.M) {
 
 
 
-func TestCreatePosts(t *testing.T) {
+//func TestCreatePosts(t *testing.T) {
+//	r := New(db)
+//
+//	req := []domain.PostCreate{
+//		{
+//			Parent: 0,
+//			Author: "username",
+//			Message: "hello",
+//		},
+//		{
+//			Parent: 0,
+//			Author: "username2",
+//			Message: "hi",
+//		},
+//
+//	}
+//
+//	p, err := r.CreatePosts(1986, req)
+//
+//	assert.Nil(t, err)
+//	fmt.Println(p)
+//}
+
+
+//func TestGetThread(t *testing.T) {
+//	r := New(db)
+//
+//	p, err := r.GetThread("slugurhouweiur")
+//
+//	assert.Nil(t, err)
+//	fmt.Println(p)
+//}
+
+
+func TestUpdateThread(t *testing.T) {
 	r := New(db)
 
-	req := []domain.PostCreate{
-		{
-			Parent: 1,
-			Author: "username",
-			Message: "hello",
-		},
-		//{
-		//	Parent: 0,
-		//	Author: "username2",
-		//	Message: "hi",
-		//},
-
-	}
-
-
-	p, err := r.CreatePostsById(1, req)
+	p, err := r.UpdateThread("23", &domain.ThreadUpdate{
+		Message: "upd_message",
+		Title: "upd_title",
+	})
 
 	assert.Nil(t, err)
 	fmt.Println(p)
 }
-
-
