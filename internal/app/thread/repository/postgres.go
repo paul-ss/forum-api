@@ -22,11 +22,16 @@ func New(db *pgxpool.Pool) *Repository {
 
 func valuesPosts(i int, req []domain.PostCreate, args *[]interface{}) string {
 	query := []string{}
-	pIdxAdd := 1
+	pIdxAdd := 0
 	for _, t := range req {
 		query = append(query,
 			"( " +
-			fmt.Sprintf("(SELECT path FROM posts WHERE id = $%d) || (select last_value FROM seq) + %d, ", i, pIdxAdd) +
+			fmt.Sprintf("(WITH par AS (SELECT path FROM posts WHERE id = $%d) ", i) +
+			"SELECT CASE WHEN ((SELECT path FROM par) IS NOT NULL) THEN " +
+			fmt.Sprintf("(SELECT path FROM par) || (last_value + %d) ", pIdxAdd) +
+			fmt.Sprintf("WHEN ($%d < 1) THEN ", i) +
+			fmt.Sprintf("ARRAY[last_value + %d]  ", pIdxAdd) +
+			"ELSE null END FROM posts_id_seq), " +
 			fmt.Sprintf("$%d, $%d, ", i + 1, i + 2) +
 			"(SELECT slug FROM t), " +
 			"(SELECT forum_id FROM t), " +

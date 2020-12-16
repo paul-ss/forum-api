@@ -42,17 +42,18 @@ func TestCreatePosts(t *testing.T) {
 
 	req := []domain.PostCreate{
 		{
-			Parent: 231,
+			Parent: 1,
 			Author: "username",
 			Message: "hello",
 		},
-		{
-			Parent: 0,
-			Author: "username2",
-			Message: "hi",
-		},
+		//{
+		//	Parent: 0,
+		//	Author: "username2",
+		//	Message: "hi",
+		//},
 
 	}
+
 
 	p, err := r.CreatePostsById(1, req)
 
