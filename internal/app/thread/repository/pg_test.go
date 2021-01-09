@@ -88,9 +88,9 @@ func TestGetPosts(t *testing.T) {
 	r := New(db)
 
 	p, err := r.GetPosts(1, &query.GetThreadPosts{
-		Limit: 1,
-		Since: 1,
-		Sort: "tr",
+		Limit: 10,
+		Since: 0,
+		Sort: "tree",
 		Desc: false,
 	})
 

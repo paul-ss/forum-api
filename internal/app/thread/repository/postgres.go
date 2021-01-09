@@ -169,30 +169,40 @@ func getPostsCond(id interface{}, param int) string {
 func getPostsSort(q *query.GetThreadPosts) string {
 	switch q.Sort {
 	case "flat":
+		// desc + limit returns strange result
 		return "AND id > $2 " +
 			"ORDER BY created " + utils.DESC(q.Desc) +
 			"LIMIT $3 "
 	case "tree":
 		return "AND id > $2 " +
-			"ORDER BY path[1] " + utils.DESC(q.Desc) +  ", path " +
+			"ORDER BY p.path[1] " + utils.DESC(q.Desc) +  ", p.path " +
 			"LIMIT $3 "
+	case "parent_tree" :
+		return "AND path[1] >= (SELECT min FROM ls)  AND path[1] <= (SELECT max FROM ls)" +
+			"ORDER BY p.path[1] " + utils.DESC(q.Desc) +  ", p.path "
 	default:
-		return "AND id > $2  AND path[1] <= ( " +
-			"SELECT id FROM ( " +
-				"SELECT id FROM posts " +
-				"WHERE array_length(path, 1) = 1 AND id > $2 " +
-				"LIMIT $3 " +
-				") idx ORDER BY id DESC LIMIT 1 " +
-			") " +
-			"ORDER BY path[1] " + utils.DESC(q.Desc) +  ", path "
+		return "error"
 	}
+}
+
+func getPostsWith(q *query.GetThreadPosts) string {
+	if q.Sort == "parent_tree" {
+		return " , ls AS " +
+			"(SELECT min(id) AS min, max(id) AS max " +
+			"FROM (SELECT id FROM posts " +
+			"WHERE thread_id = (SELECT id FROM t) AND array_length(path, 1) = 1 AND id > $2 " +
+			"LIMIT $3) as unused_alias) "
+	}
+
+	return " "
 }
 
 func (r *Repository) GetPosts(threadId interface{}, q *query.GetThreadPosts) ([]domain.Post, error) {
 	rows, err := r.db.Query(context.Background(),
 		"WITH t AS " + getPostsCond(threadId, 1) +
+			getPostsWith(q) +
 			"SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created " +
-			"FROM posts " +
+			"FROM posts p " +
 			"WHERE thread_id = (SELECT id FROM t) " +
 			getPostsSort(q),
 			threadId, q.Since, q.Limit)

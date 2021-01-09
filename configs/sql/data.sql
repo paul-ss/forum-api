@@ -22,3 +22,23 @@ values
 insert into posts (id, path, parent_id, author, message, forum_id, thread_id)
 values
 (1, '{1}', 0, 'username', 'my_message', 1, 1);
+
+insert into posts (id, path, parent_id, author, message, forum_id, thread_id)
+values
+(2, '{1, 2}', 0, 'username', 'my_message1.2', 1, 1);
+
+insert into posts (id, path, parent_id, author, message, forum_id, thread_id)
+values
+(3, '{1, 3}', 0, 'username', 'my_message1.3', 1, 1);
+
+insert into posts (id, path, parent_id, author, message, forum_id, thread_id)
+values
+(4, '{1, 2, 4}', 0, 'username', 'my_message1.2.4', 1, 1);
+
+insert into posts (id, path, parent_id, author, message, forum_id, thread_id)
+values
+(5, '{1, 2, 5}', 0, 'username', 'my_message1.2.5', 1, 1);
+
+insert into posts (id, path, parent_id, author, message, forum_id, thread_id)
+values
+(6, '{6}', 0, 'username', 'my_message6', 1, 1);
