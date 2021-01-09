@@ -159,14 +159,14 @@ func (r *Repository) UpdateThread(threadId interface{}, req *domain.ThreadUpdate
 
 func getPostsCond(id interface{}, param int) string {
 	if _, ok := id.(string); ok {
-		return fmt.Sprintf("(SELECT id FROM thread WHERE slug = $%d) ", param)
+		return fmt.Sprintf(" (SELECT id FROM threads WHERE slug = $%d) ", param)
 	} else {
-		return fmt.Sprintf("(SELECT $%d AS id) ", param)
+		return fmt.Sprintf(" (SELECT id FROM threads WHERE id = $%d) ", param)
 	}
 }
 
 
-func getPostsSort(q *query.GetThreadPosts, ) string {
+func getPostsSort(q *query.GetThreadPosts) string {
 	switch q.Sort {
 	case "flat":
 		return "AND id > $2 " +
@@ -177,14 +177,14 @@ func getPostsSort(q *query.GetThreadPosts, ) string {
 			"ORDER BY path[1] " + utils.DESC(q.Desc) +  ", path " +
 			"LIMIT $3 "
 	default:
-		return "AND id > $2 " +
-			"ORDER BY path[1] " + utils.DESC(q.Desc) +  ", path " +
-			"LIMIT $3 (SELECT COUNT(1) FROM posts " +
-				"WHERE array_length(path, 1) = 1 AND " +
-				"thread_id = (SELECT id FROM t) AND " +
-				"id > $2 " +
-				"ORDER BY id DESC " +
-				"LIMIT 1"
+		return "AND id > $2  AND path[1] <= ( " +
+			"SELECT id FROM ( " +
+				"SELECT id FROM posts " +
+				"WHERE array_length(path, 1) = 1 AND id > $2 " +
+				"LIMIT $3 " +
+				") idx ORDER BY id DESC LIMIT 1 " +
+			") " +
+			"ORDER BY path[1] " + utils.DESC(q.Desc) +  ", path "
 	}
 }
 
@@ -194,7 +194,38 @@ func (r *Repository) GetPosts(threadId interface{}, q *query.GetThreadPosts) ([]
 			"SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created " +
 			"FROM posts " +
 			"WHERE thread_id = (SELECT id FROM t) " +
-			getPostsSort(q),)
+			getPostsSort(q),
+			threadId, q.Since, q.Limit)
 
+	if err != nil {
+		config.Lg("thread_repo", "GetPosts").Error("Query: ", err.Error())
+		return nil, err
+	}
+
+
+
+	posts := []domain.Post{}
+	for rows.Next() {
+		p := domain.Post{}
+		slug := sql.NullString{}
+		parent := sql.NullInt64{}
+
+		err := rows.Scan(&p.Id, &parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created)
+		if err != nil {
+			config.Lg("thread_repo", "GetPosts").Error("Scan: ", err.Error())
+			return nil, err
+		}
+
+		p.ForumSlug = slug.String
+		p.Parent = parent.Int64
+		posts = append(posts, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		config.Lg("thread_repo", "GetPosts").Error("Rows: ", err.Error())
+		return nil, createPostError(err)
+	}
+
+	return posts, nil
 
 }

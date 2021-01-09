@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
-	"github.com/paul-ss/forum-api/internal/domain"
+	"github.com/paul-ss/forum-api/internal/domain/query"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -71,14 +71,31 @@ func TestMain(m *testing.M) {
 //}
 
 
-func TestUpdateThread(t *testing.T) {
+//func TestUpdateThread(t *testing.T) {
+//	r := New(db)
+//
+//	p, err := r.UpdateThread("23", &domain.ThreadUpdate{
+//		Message: "upd_message",
+//		Title: "upd_title",
+//	})
+//
+//	assert.Nil(t, err)
+//	fmt.Println(p)
+//}
+
+
+func TestGetPosts(t *testing.T) {
 	r := New(db)
 
-	p, err := r.UpdateThread("23", &domain.ThreadUpdate{
-		Message: "upd_message",
-		Title: "upd_title",
+	p, err := r.GetPosts(1, &query.GetThreadPosts{
+		Limit: 1,
+		Since: 1,
+		Sort: "tr",
+		Desc: false,
 	})
 
 	assert.Nil(t, err)
-	fmt.Println(p)
+	for _, pp := range p {
+		fmt.Println(pp)
+	}
 }
