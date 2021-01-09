@@ -269,3 +269,19 @@ func (r *Repository) GetPosts(threadId interface{}, q *query.GetThreadPosts) ([]
 
 	return posts, nil
 }
+
+func (r *Repository) VoteThread(threadId interface{}, req *domain.Vote)  error {
+	_, err := r.db.Exec(context.Background(),
+		"WITH t AS " + getPostsCond(threadId, 1) +
+			"INSERT into votes (nickname, thread_id, voice) " +
+			"VALUES ($2, (SELECT id FROM t), $3) " +
+			"ON CONFLICT(thread_id, nickname) DO UPDATE " +
+			"SET voice = $3 ",
+			threadId, req.Nickname, req.Voice)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -68,8 +68,11 @@ CREATE INDEX ON posts (forum_id, author);
 
 CREATE TABLE IF NOT EXISTS votes (
     nickname text NOT NULL,
+    thread_id integer NOT NULL,
     voice integer NOT NULL,
-    FOREIGN KEY (nickname) REFERENCES users(nickname)
+    FOREIGN KEY (nickname) REFERENCES users(nickname),
+    FOREIGN KEY (thread_id) REFERENCES threads(id),
+    UNIQUE (thread_id, nickname)
 );
 
 -- ======================
