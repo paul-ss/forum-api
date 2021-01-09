@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -198,10 +199,30 @@ func getPostsWith(q *query.GetThreadPosts) string {
 }
 
 func (r *Repository) GetPosts(threadId interface{}, q *query.GetThreadPosts) ([]domain.Post, error) {
-	rows, err := r.db.Query(context.Background(),
+	tx, err := r.db.Begin(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(context.Background())
+
+	counter := 0
+	if err := tx.QueryRow(context.Background(),
+			"WITH t AS " + getPostsCond(threadId, 1) +
+			"SELECT COUNT(*) FROM t ",
+			threadId).Scan(&counter); err != nil {
+		return nil, errors.New("Query 1: " + err.Error())
+	}
+
+	if counter == 0 {
+		return nil, domainErr.NotExists
+	}
+
+
+	rows, err := tx.Query(context.Background(),
 		"WITH t AS " + getPostsCond(threadId, 1) +
 			getPostsWith(q) +
-			"SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created " +
+			"SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created, " +
+			"CASE WHEN (SELECT id FROM t) IS NOT NULL THEN 1 ELSE 0 END as exists " +
 			"FROM posts p " +
 			"WHERE thread_id = (SELECT id FROM t) " +
 			getPostsSort(q),
@@ -220,10 +241,16 @@ func (r *Repository) GetPosts(threadId interface{}, q *query.GetThreadPosts) ([]
 		slug := sql.NullString{}
 		parent := sql.NullInt64{}
 
-		err := rows.Scan(&p.Id, &parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created)
+		exists := 0
+
+		err := rows.Scan(&p.Id, &parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created, &exists)
 		if err != nil {
 			config.Lg("thread_repo", "GetPosts").Error("Scan: ", err.Error())
 			return nil, err
+		}
+
+		if exists != 1 {
+			return nil, domainErr.NotExists
 		}
 
 		p.ForumSlug = slug.String
@@ -236,6 +263,9 @@ func (r *Repository) GetPosts(threadId interface{}, q *query.GetThreadPosts) ([]
 		return nil, createPostError(err)
 	}
 
-	return posts, nil
+	if err := tx.Commit(context.Background()); err != nil {
+		return nil, err
+	}
 
+	return posts, nil
 }
