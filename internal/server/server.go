@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/paul-ss/forum-api/configs/go"
+	"github.com/paul-ss/forum-api/internal/app/user/delivery"
 
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -26,9 +27,8 @@ func New() *Server {
 	ctx := NewContext()
 
 	r := gin.Default()
-	r.MaxMultipartMemory = 8 << 20
-	r.Static(config.Conf.Web.Static.UrlImg, config.Conf.Web.Static.DirImg)
 
+	delivery.CreateUserDelivery(ctx.db.DbPool, r)
 
 	return &Server{
 		ctx: ctx,
