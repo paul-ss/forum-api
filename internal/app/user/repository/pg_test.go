@@ -37,77 +37,40 @@ func TestMain(m *testing.M) {
 
 
 
-//func TestCreatePosts(t *testing.T) {
+//func TestCreateUser(t *testing.T) {
 //	r := New(db)
 //
-//	req := []domain.PostCreate{
-//		{
-//			Parent: 0,
-//			Author: "username",
-//			Message: "hello",
-//		},
-//		{
-//			Parent: 0,
-//			Author: "username2",
-//			Message: "hi",
-//		},
 //
-//	}
-//
-//	p, err := r.CreatePosts(1986, req)
-//
-//	assert.Nil(t, err)
-//	fmt.Println(p)
-//}
-
-
-//func TestGetThread(t *testing.T) {
-//	r := New(db)
-//
-//	p, err := r.GetThread("slugurhouweiur")
-//
-//	assert.Nil(t, err)
-//	fmt.Println(p)
-//}
-
-
-//func TestUpdateThread(t *testing.T) {
-//	r := New(db)
-//
-//	p, err := r.UpdateThread("23", &domain.ThreadUpdate{
-//		Message: "upd_message",
-//		Title: "upd_title",
+//	p, err := r.CreateUser("username4321", &domain.UserCreate{
+//		FullName: "full name",
+//		Email: "email",
+//		About: "about",
 //	})
 //
 //	assert.Nil(t, err)
 //	fmt.Println(p)
 //}
 
-//
-//func TestGetPosts(t *testing.T) {
+//func TestGetUser(t *testing.T) {
 //	r := New(db)
 //
-//	p, err := r.GetPosts(1, &query.GetThreadPosts{
-//		Limit: 10,
-//		Since: 0,
-//		Sort: "tree",
-//		Desc: false,
-//	})
+//
+//	p, err := r.GetUser("usernam")
 //
 //	assert.Nil(t, err)
-//	for _, pp := range p {
-//		fmt.Println(pp)
-//	}
+//	fmt.Println(p)
 //}
 
-func TestVoteThread(t *testing.T) {
+func TestUpdUser(t *testing.T) {
 	r := New(db)
 
-	err := r.VoteThread(0, &domain.Vote{
-		Voice: -1,
-		Nickname: "username",
+
+	p, err := r.UpdateUser("username", &domain.UserCreate{
+		FullName: "full_name_upd",
+		About: "about-upd",
+		Email: "email-",
 	})
 
 	assert.Nil(t, err)
-
+	fmt.Println(p)
 }
