@@ -7,6 +7,7 @@ import (
 	"github.com/paul-ss/forum-api/configs/go"
 	delivery2 "github.com/paul-ss/forum-api/internal/app/forum/delivery"
 	delivery3 "github.com/paul-ss/forum-api/internal/app/post/delivery"
+	delivery4 "github.com/paul-ss/forum-api/internal/app/thread/delivery"
 	"github.com/paul-ss/forum-api/internal/app/user/delivery"
 
 	log "github.com/sirupsen/logrus"
@@ -33,6 +34,7 @@ func New() *Server {
 	delivery.CreateUserDelivery(ctx.db.DbPool, r)
 	delivery2.CreateForumDelivery(ctx.db.DbPool, r)
 	delivery3.CreatePostDelivery(ctx.db.DbPool, r)
+	delivery4.CreateThreadDelivery(ctx.db.DbPool, r)
 
 	return &Server{
 		ctx: ctx,

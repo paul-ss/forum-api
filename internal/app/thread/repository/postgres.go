@@ -270,18 +270,44 @@ func (r *Repository) GetPosts(threadId interface{}, q *query.GetThreadPosts) ([]
 	return posts, nil
 }
 
-func (r *Repository) VoteThread(threadId interface{}, req *domain.Vote)  error {
-	_, err := r.db.Exec(context.Background(),
+func (r *Repository) VoteThread(threadId interface{}, req *domain.Vote) (*domain.Thread, error) {
+	tx, er := r.db.Begin(context.Background())
+	if er != nil {
+		config.Lg("thread_repo", "VoteThread").Error("Begin: " + er.Error())
+		return nil, er
+	}
+	defer tx.Rollback(context.Background())
+
+	thrIdInt := 0
+	err := tx.QueryRow(context.Background(),
 		"WITH t AS " + getPostsCond(threadId, 1) +
 			"INSERT into votes (nickname, thread_id, voice) " +
 			"VALUES ($2, (SELECT id FROM t), $3) " +
 			"ON CONFLICT(thread_id, nickname) DO UPDATE " +
-			"SET voice = $3 ",
-			threadId, req.Nickname, req.Voice)
+			"SET voice = $3 " +
+			"RETURNING thread_id ",
+			threadId, req.Nickname, req.Voice).Scan(&thrIdInt)
 
 	if err != nil {
-		return err
+		config.Lg("thread_repo", "VoteThread").Error("Query 1: " + err.Error())
+		return nil, err
 	}
 
-	return nil
+	t := domain.Thread{}
+	if err := tx.QueryRow(context.Background(),
+		"SELECT id, title, author, forum_title, message, votes, slug, created " +
+			"FROM threads " +
+			"WHERE id = $1 ", thrIdInt).
+			Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created); err != nil {
+		config.Lg("thread_repo", "VoteThread").Error("Query 2: " + err.Error())
+		return nil, err
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		config.Lg("thread_repo", "VoteThread").Error("Commit: " + err.Error())
+		return nil, err
+	}
+
+
+	return &t, nil
 }

@@ -36,3 +36,17 @@ func GetInt64Param(c *gin.Context, param string) (int64, error) {
 
 	return strconv.ParseInt(strParam, 10, 64)
 }
+
+func GetIntOrStringParam(c *gin.Context, param string) (interface{}, error) {
+	strParam, ok := c.Params.Get(param)
+	if !ok {
+		return nil, fmt.Errorf("param '%s' not found", param)
+	}
+
+	intPar, err := strconv.Atoi(strParam)
+	if err != nil {
+		return strParam, nil
+	}
+
+	return intPar, nil
+}

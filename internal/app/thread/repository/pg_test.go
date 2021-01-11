@@ -103,11 +103,11 @@ func TestMain(m *testing.M) {
 func TestVoteThread(t *testing.T) {
 	r := New(db)
 
-	err := r.VoteThread(0, &domain.Vote{
+	res, err := r.VoteThread(0, &domain.Vote{
 		Voice: -1,
 		Nickname: "username",
 	})
 
 	assert.Nil(t, err)
-
+	fmt.Println(res)
 }
