@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/go-park-mail-ru/2020_2_Eternity/configs/config"
+	config "github.com/paul-ss/forum-api/configs/go"
 	"github.com/paul-ss/forum-api/internal/server"
 )
 
