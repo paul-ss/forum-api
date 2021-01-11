@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -23,4 +26,13 @@ func DESC(d bool) string {
 		return " DESC "
 	}
 	return " "
+}
+
+func GetInt64Param(c *gin.Context, param string) (int64, error) {
+	strParam, ok := c.Params.Get(param)
+	if !ok {
+		return 0, fmt.Errorf("param '%s' not found", param)
+	}
+
+	return strconv.ParseInt(strParam, 10, 64)
 }
