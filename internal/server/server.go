@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/paul-ss/forum-api/configs/go"
+	delivery2 "github.com/paul-ss/forum-api/internal/app/forum/delivery"
 	"github.com/paul-ss/forum-api/internal/app/user/delivery"
 
 	log "github.com/sirupsen/logrus"
@@ -29,6 +30,7 @@ func New() *Server {
 	r := gin.Default()
 
 	delivery.CreateUserDelivery(ctx.db.DbPool, r)
+	delivery2.CreateForumDelivery(ctx.db.DbPool, r)
 
 	return &Server{
 		ctx: ctx,
