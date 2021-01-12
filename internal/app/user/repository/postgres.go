@@ -90,7 +90,7 @@ func (r *Repository) GetUser(username string) (*domain.User, error) {
 	err := r.db.QueryRow(context.Background(),
 		"SELECT nickname, fullname, about, email " +
 			"FROM users " +
-			"WHERE nickname = $1",
+			"WHERE LOWER(nickname) = LOWER($1)",
 			username).Scan(&u.Nickname, &u.FullName, &u.About, &u.Email)
 
 	if err != nil {
@@ -107,7 +107,7 @@ func (r *Repository) UpdateUser(username string, req *domain.UserCreate) (*domai
 	err := r.db.QueryRow(context.Background(),
 		"UPDATE users " +
 		"SET fullname = $2, about = $3, email = $4 " +
-		"WHERE nickname = $1 " +
+		"WHERE LOWER(nickname) = LOWER($1) " +
 		"RETURNING nickname, fullname, about, email ",
 		username, req.FullName, req.About, req.Email).Scan(&u.Nickname, &u.FullName, &u.About, &u.Email)
 
