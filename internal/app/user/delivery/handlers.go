@@ -64,7 +64,7 @@ func (d *Delivery) GetUser(c *gin.Context) {
 func (d *Delivery) UpdateUser(c *gin.Context) {
 	username := c.Param(NicknameParam)
 
-	req := domain.UserCreate{}
+	req := domain.UserUpdate{}
 	if err := c.BindJSON(&req); err != nil {
 		config.Lg("user_http", "UpdUser").Error(err.Error())
 		c.JSON(400, domain.Error{err.Error()})

@@ -23,7 +23,7 @@ func (uc *Usecase) GetUser(username string) (*domain.User, error) {
 	return uc.db.GetUser(username)
 }
 
-func (uc *Usecase) UpdateUser(username string, req *domain.UserCreate) (*domain.User, error) {
+func (uc *Usecase) UpdateUser(username string, req *domain.UserUpdate) (*domain.User, error) {
 	return uc.db.UpdateUser(username, req)
 }
 

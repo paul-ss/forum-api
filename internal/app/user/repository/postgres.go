@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
 	"github.com/paul-ss/forum-api/internal/domain"
 	domainErr "github.com/paul-ss/forum-api/internal/domain/errors"
+	"strings"
 )
 
 type Repository struct {
@@ -17,6 +19,35 @@ func New(db *pgxpool.Pool) *Repository {
 	return &Repository{
 		db: db,
 	}
+}
+
+func updateUserFields(args *[]interface{}, req *domain.UserUpdate, startIdx int) string {
+	query := []string{}
+	if req.FullName != nil {
+		query = append(query, fmt.Sprintf(" fullname = $%d", startIdx), ", ")
+		startIdx += 1
+		*args = append(*args, *req.FullName)
+	}
+
+	if req.About != nil {
+		query = append(query, fmt.Sprintf(" about = $%d", startIdx), ", ")
+		startIdx += 1
+		*args = append(*args, *req.About)
+	}
+
+	if req.Email != nil {
+		query = append(query, fmt.Sprintf(" email = $%d", startIdx), ", ")
+		startIdx += 1
+		*args = append(*args, *req.Email)
+	}
+
+	if len(query) == 0 {
+		query = append(query, " email = email ")
+	} else {
+		query = query[:len(query)-1]
+	}
+
+	return strings.Join(query, "")
 }
 
 func (r *Repository) CreateUser(username string, req *domain.UserCreate) ([]domain.User, error) {
@@ -101,15 +132,17 @@ func (r *Repository) GetUser(username string) (*domain.User, error) {
 	return &u, nil
 }
 
-func (r *Repository) UpdateUser(username string, req *domain.UserCreate) (*domain.User, error) {
+func (r *Repository) UpdateUser(username string, req *domain.UserUpdate) (*domain.User, error) {
 	u := domain.User{}
+	args := []interface{}{}
+	args = append(args, username)
 
 	err := r.db.QueryRow(context.Background(),
 		"UPDATE users " +
-		"SET fullname = $2, about = $3, email = $4 " +
+		"SET " + updateUserFields(&args, req, 2) +
 		"WHERE LOWER(nickname) = LOWER($1) " +
 		"RETURNING nickname, fullname, about, email ",
-		username, req.FullName, req.About, req.Email).Scan(&u.Nickname, &u.FullName, &u.About, &u.Email)
+		args...).Scan(&u.Nickname, &u.FullName, &u.About, &u.Email)
 
 	if err != nil {
 		switch e := err.(type) {

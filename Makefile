@@ -10,6 +10,7 @@ dbsetup:
 
 .PHONY: dbsetupc
 dbsetupc:
+	make dbclear
 	PGPASSWORD='662f2710-4e08' psql -U forum_user -h 127.0.0.1 -d forum_db -f configs/sql/forum.sql -w
 
 
