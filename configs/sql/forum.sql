@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS users (
+    id serial NOT NULL,
     nickname text NOT NULL PRIMARY KEY,
     fullname text NOT NULL,
     about text,
@@ -74,6 +75,14 @@ CREATE TABLE IF NOT EXISTS votes (
     FOREIGN KEY (thread_id) REFERENCES threads(id),
     UNIQUE (thread_id, nickname)
 );
+
+
+-- CREATE TABLE IF NOT EXISTS stats (
+--     usr integer NOT NULL DEFAULT 0,
+--     forum integer NOT NULL DEFAULT 0,
+--     thread integer NOT NULL DEFAULT 0,
+--     post bigint NOT NULL DEFAULT 0
+-- );
 
 -- ======================
 

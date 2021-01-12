@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
-	"github.com/paul-ss/forum-api/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -61,16 +60,34 @@ func TestMain(m *testing.M) {
 //	fmt.Println(p)
 //}
 
-func TestUpdUser(t *testing.T) {
+//func TestUpdUser(t *testing.T) {
+//	r := New(db)
+//
+//
+//	p, err := r.UpdateUser("username", &domain.UserCreate{
+//		FullName: "full_name_upd",
+//		About: "about-upd",
+//		Email: "email-",
+//	})
+//
+//	assert.Nil(t, err)
+//	fmt.Println(p)
+//}
+
+
+//func TestClear(t *testing.T) {
+//	r := New(db)
+//
+//
+//	err := r.ClearAll()
+//	assert.Nil(t, err)
+//}
+
+func TestGetStats(t *testing.T) {
 	r := New(db)
 
 
-	p, err := r.UpdateUser("username", &domain.UserCreate{
-		FullName: "full_name_upd",
-		About: "about-upd",
-		Email: "email-",
-	})
-
+	s, err := r.GetStats()
+	fmt.Println(s)
 	assert.Nil(t, err)
-	fmt.Println(p)
 }

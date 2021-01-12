@@ -8,7 +8,7 @@ import (
 	"github.com/paul-ss/forum-api/internal/app/post/usecase"
 )
 
-func CreatePostDelivery(db *pgxpool.Pool, handler *gin.Engine) {
+func CreatePostDelivery(db *pgxpool.Pool, handler *gin.RouterGroup) {
 	r := repository.New(db)
 	uc := usecase.New(r)
 	d := New(uc)

@@ -31,10 +31,12 @@ func New() *Server {
 
 	r := gin.Default()
 
-	delivery.CreateUserDelivery(ctx.db.DbPool, r)
-	delivery2.CreateForumDelivery(ctx.db.DbPool, r)
-	delivery3.CreatePostDelivery(ctx.db.DbPool, r)
-	delivery4.CreateThreadDelivery(ctx.db.DbPool, r)
+	api := r.Group("/api")
+
+	delivery.CreateUserDelivery(ctx.db.DbPool, api)
+	delivery2.CreateForumDelivery(ctx.db.DbPool, api)
+	delivery3.CreatePostDelivery(ctx.db.DbPool, api)
+	delivery4.CreateThreadDelivery(ctx.db.DbPool, api)
 
 	return &Server{
 		ctx: ctx,

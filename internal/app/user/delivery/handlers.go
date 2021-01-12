@@ -87,3 +87,25 @@ func (d *Delivery) UpdateUser(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
+
+func (d *Delivery) ClearAll(c *gin.Context) {
+	if err := d.uc.ClearAll(); err != nil {
+		config.Lg("user_http", "ClearAll").Error(err.Error())
+		c.JSON(500, domain.Error{err.Error()})
+		return
+	}
+
+	c.Status(200)
+}
+
+func (d *Delivery) GetStats(c *gin.Context) {
+	resp, err := d.uc.GetStats()
+	if err != nil {
+		config.Lg("user_http", "GetStats").Error(err.Error())
+		c.JSON(500, domain.Error{err.Error()})
+		return
+	}
+
+	c.JSON(200, resp)
+}
+

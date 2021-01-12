@@ -26,3 +26,11 @@ func (uc *Usecase) GetUser(username string) (*domain.User, error) {
 func (uc *Usecase) UpdateUser(username string, req *domain.UserCreate) (*domain.User, error) {
 	return uc.db.UpdateUser(username, req)
 }
+
+func (uc *Usecase) ClearAll() error {
+	return uc.db.ClearAll()
+}
+
+func (uc *Usecase) GetStats() (*domain.Status, error) {
+	return uc.db.GetStats()
+}

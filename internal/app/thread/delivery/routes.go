@@ -8,7 +8,7 @@ import (
 	"github.com/paul-ss/forum-api/internal/app/thread/usecase"
 )
 
-func CreateThreadDelivery(db *pgxpool.Pool, handler *gin.Engine) {
+func CreateThreadDelivery(db *pgxpool.Pool, handler *gin.RouterGroup) {
 	r := repository.New(db)
 	uc := usecase.New(r)
 	d := New(uc)

@@ -125,3 +125,36 @@ func (r *Repository) UpdateUser(username string, req *domain.UserCreate) (*domai
 
 	return &u, nil
 }
+
+
+// STATS ====
+
+func (r *Repository) ClearAll() error {
+	if _, err := r.db.Exec(context.Background(),
+		"TRUNCATE TABLE users, forums, threads, posts, votes, stats "); err != nil {
+		config.Lg("user_repo", "ClearAll").Error("Exec : ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+
+func (r *Repository) GetStats() (*domain.Status, error) {
+	s := domain.Status{}
+	err := r.db.QueryRow(context.Background(),
+		"SELECT " +
+				"CASE WHEN u.is_called THEN u.last_value ELSE 0 END, " +
+				"CASE WHEN f.is_called THEN f.last_value ELSE 0 END, " +
+				"CASE WHEN t.is_called THEN t.last_value ELSE 0 END, " +
+				"CASE WHEN p.is_called THEN p.last_value ELSE 0 END " +
+			"FROM users_id_seq u, forums_id_seq f, threads_id_seq t, posts_id_seq p ").
+		Scan(&s.User, &s.Forum, &s.Thread, &s.Post)
+
+	if err != nil {
+		config.Lg("user_repo", "GetStats").Error(err.Error())
+		return nil, err
+	}
+
+	return &s, nil
+}
