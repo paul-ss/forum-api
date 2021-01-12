@@ -3,8 +3,10 @@ CREATE TABLE IF NOT EXISTS users (
     nickname text NOT NULL PRIMARY KEY,
     fullname text NOT NULL,
     about text,
-    email text NOT NULL UNIQUE
+    email text NOT NULL
 );
+
+CREATE UNIQUE INDEX email_unique_idx on users (LOWER(email));
 
 
 

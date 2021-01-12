@@ -30,7 +30,7 @@ func (r *Repository) CreateUser(username string, req *domain.UserCreate) ([]doma
 	rows, err := r.db.Query(context.Background(),
 		"SELECT nickname, fullname, about, email " +
 		"FROM users " +
-		"WHERE nickname = $1 OR email = $2 ",
+		"WHERE LOWER(nickname) = LOWER($1) OR LOWER(email) = LOWER($2) ",
 		username, req.Email)
 
 	if err != nil {
