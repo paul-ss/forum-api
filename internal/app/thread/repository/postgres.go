@@ -38,7 +38,7 @@ func valuesPosts(i int, req []domain.PostCreate, args *[]interface{}) string {
 			fmt.Sprintf("ARRAY[last_value + %d]  ", pIdxAdd) +
 			"ELSE null END FROM seq), " +
 			fmt.Sprintf("$%d, $%d, ", i + 1, i + 2) +
-			"(SELECT slug FROM t), " +
+			"(SELECT forum_slug FROM t), " +
 			"(SELECT forum_id FROM t), " +
 			"(SELECT id FROM t) " +
 			")", ",")
@@ -48,15 +48,18 @@ func valuesPosts(i int, req []domain.PostCreate, args *[]interface{}) string {
 		pIdxAdd += 1
 	}
 
-	query = query[:len(query) - 1]
+	if len(query) > 0 {
+		query = query[:len(query) - 1]
+	}
+
 	return strings.Join(query, "")
 }
 
 func createPostSelectThread(id interface{}) string {
 	 if _, ok := id.(string); ok {
-		 return "(SELECT forum_id, slug, id FROM threads WHERE slug = $1)"
+		 return "(SELECT forum_id, forum_slug, id FROM threads WHERE slug = $1)"
 	 } else {
-		 return "(SELECT forum_id, slug, id FROM threads WHERE id = $1)"
+		 return "(SELECT forum_id, forum_slug, id FROM threads WHERE id = $1)"
 	 }
 }
 
@@ -72,6 +75,10 @@ func createPostError(err error) error {
 }
 
 func (r *Repository) CreatePosts(threadId interface{}, req []domain.PostCreate) ([]domain.Post, error) {
+	if len(req) == 0 {
+		return []domain.Post{}, nil
+	}
+
 	args := []interface{}{}
 	args = append(args, threadId)
 	rows, err := r.db.Query(context.Background(),

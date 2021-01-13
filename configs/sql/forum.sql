@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS threads (
     title text NOT NULL,
     author citext NOT NULL,
 
-    forum_slug text NOT NULL,
+    forum_slug citext NOT NULL,
     forum_id integer NOT NULL,
 
     message text NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS posts (
     message text NOT NULL,
     isEdited bool NOT NULL DEFAULT false,
 
-    forum_slug text, -- slug
+    forum_slug citext, -- slug
     forum_id integer NOT NULL,
 
     thread_id integer NOT NULL, --fk
