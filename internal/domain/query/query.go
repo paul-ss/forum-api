@@ -8,7 +8,6 @@ import (
 )
 
 
-
 type GetForumUsers struct{
 	Limit int32
 	Since string
@@ -16,10 +15,7 @@ type GetForumUsers struct{
 }
 
 func (q *GetForumUsers) Init(c *gin.Context) error {
-	p, ok := c.GetQuery("limit")
-	if !ok {
-		return fmt.Errorf("limit param not exists")
-	}
+	p := c.DefaultQuery("limit", "0")
 
 	limit, err := strconv.Atoi(p)
 	if err != nil {
@@ -29,18 +25,13 @@ func (q *GetForumUsers) Init(c *gin.Context) error {
 	q.Limit = int32(limit)
 
 
-	p, ok = c.GetQuery("since")
-	if !ok {
-		return fmt.Errorf("since param not exists")
-	}
+	p = c.DefaultQuery("since", "0")
 
 	q.Since = p
 
 
-	p, ok = c.GetQuery("desc")
-	if !ok {
-		return fmt.Errorf("desc param not exists")
-	}
+	p = c.DefaultQuery("desc", "false")
+
 
 	desc, err := strconv.ParseBool(p)
 	if err != nil {
@@ -59,10 +50,7 @@ type GetForumThreads struct{
 }
 
 func (q *GetForumThreads) Init(c *gin.Context) error {
-	p, ok := c.GetQuery("limit")
-	if !ok {
-		return fmt.Errorf("limit param not exists")
-	}
+	p := c.DefaultQuery("limit", "0")
 
 	limit, err := strconv.Atoi(p)
 	if err != nil {
@@ -71,24 +59,22 @@ func (q *GetForumThreads) Init(c *gin.Context) error {
 
 	q.Limit = int32(limit)
 
+	// "2006-01-02T15:04:05Z"
 
-	p, ok = c.GetQuery("since")
-	if !ok {
-		return fmt.Errorf("since param not exists")
+	p, ok := c.GetQuery("since")
+	if ok {
+		tme, err := time.Parse(time.RFC3339, p)
+		if err != nil {
+			return fmt.Errorf("error parce time")
+		}
+
+		q.Since = tme
+	} else {
+		q.Since = time.Time{}
 	}
 
-	tme, err := time.Parse(time.RFC3339, p)
-	if err != nil {
-		return fmt.Errorf("error parce time")
-	}
 
-	q.Since = tme
-
-
-	p, ok = c.GetQuery("desc")
-	if !ok {
-		return fmt.Errorf("desc param not exists")
-	}
+	p = c.DefaultQuery("desc", "false")
 
 	desc, err := strconv.ParseBool(p)
 	if err != nil {
@@ -107,10 +93,7 @@ type GetThreadPosts struct{
 }
 
 func (q *GetThreadPosts) Init(c *gin.Context) error {
-	p, ok := c.GetQuery("limit")
-	if !ok {
-		return fmt.Errorf("limit param not exists")
-	}
+	p := c.DefaultQuery("limit", "0")
 
 	limit, err := strconv.Atoi(p)
 	if err != nil {
@@ -120,10 +103,7 @@ func (q *GetThreadPosts) Init(c *gin.Context) error {
 	q.Limit = int32(limit)
 
 
-	p, ok = c.GetQuery("since")
-	if !ok {
-		return fmt.Errorf("since param not exists")
-	}
+	p = c.DefaultQuery("since", "0")
 
 	since, err := strconv.ParseInt(p, 10, 64)
 	if err != nil {
@@ -133,18 +113,12 @@ func (q *GetThreadPosts) Init(c *gin.Context) error {
 	q.Since = since
 
 
-	p, ok = c.GetQuery("sort")
-	if !ok {
-		return fmt.Errorf("sort param not exists")
-	}
+	p = c.DefaultQuery("sort", "flat")
 
 	q.Sort = p
 
 
-	p, ok = c.GetQuery("desc")
-	if !ok {
-		return fmt.Errorf("desc param not exists")
-	}
+	p = c.DefaultQuery("desc", "false")
 
 	desc, err := strconv.ParseBool(p)
 	if err != nil {

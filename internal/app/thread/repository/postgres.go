@@ -125,7 +125,7 @@ func getThreadCond(id interface{}, param int) string {
 func (r *Repository) GetThread(threadId interface{}) (*domain.Thread, error) {
 	t := domain.Thread{}
 	err := r.db.QueryRow(context.Background(),
-		"SELECT id, title, author, forum_title, message, votes, slug, created " +
+		"SELECT id, title, author, forum_slug, message, votes, slug, created " +
 			"FROM threads " +
 			getThreadCond(threadId, 1),
 			threadId).
@@ -145,7 +145,7 @@ func (r *Repository) UpdateThread(threadId interface{}, req *domain.ThreadUpdate
 		"UPDATE threads " +
 		"SET title = $1, message = $2 " +
 		getThreadCond(threadId, 3) +
-		"RETURNING id, title, author, forum_title, message, votes, slug, created ",
+		"RETURNING id, title, author, forum_slug, message, votes, slug, created ",
 		req.Title, req.Message, threadId).
 		Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created)
 
@@ -295,7 +295,7 @@ func (r *Repository) VoteThread(threadId interface{}, req *domain.Vote) (*domain
 
 	t := domain.Thread{}
 	if err := tx.QueryRow(context.Background(),
-		"SELECT id, title, author, forum_title, message, votes, slug, created " +
+		"SELECT id, title, author, forum_slug, message, votes, slug, created " +
 			"FROM threads " +
 			"WHERE id = $1 ", thrIdInt).
 			Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created); err != nil {

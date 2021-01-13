@@ -28,6 +28,7 @@ func DESC(d bool) string {
 	return " "
 }
 
+
 func GetInt64Param(c *gin.Context, param string) (int64, error) {
 	strParam, ok := c.Params.Get(param)
 	if !ok {

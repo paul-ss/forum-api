@@ -18,6 +18,7 @@ type ThreadCreate struct {
 	Author string `json:"author"`
 	Message string `json:"message"`
 	Created time.Time `json:"created"`
+	Slug string `json:"slug"`
 }
 
 type ThreadUpdate struct {

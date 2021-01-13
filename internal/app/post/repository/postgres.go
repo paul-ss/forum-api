@@ -60,7 +60,7 @@ func (r *Repository) GetThread(postId int64) (*domain.Thread, error) {
 	slug := sql.NullString{}
 	err := r.db.QueryRow(context.Background(),
 		"WITH t AS (SELECT thread_id FROM posts WHERE id = $1) " +
-			"SELECT id, title, author, forum_title, message, votes, slug, created " +
+			"SELECT id, title, author, forum_slug, message, votes, slug, created " +
 			"FROM threads " +
 			"WHERE id = (SELECT thread_id FROM t) ",
 		postId).

@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS forums (
 
     title text NOT NULL,
     nickname citext NOT NULL,
-    slug text NOT NULL UNIQUE,
+    slug citext NOT NULL UNIQUE,
 
     -- trigger ?
     posts bigint DEFAULT 0,
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS forums (
 );
 
 CREATE INDEX ON forums (slug);
-CREATE UNIQUE INDEX slug_unique_idx on forums (LOWER(slug));
+
 
 
 CREATE TABLE IF NOT EXISTS threads (
@@ -35,13 +35,13 @@ CREATE TABLE IF NOT EXISTS threads (
     title text NOT NULL,
     author citext NOT NULL,
 
-    forum_title text NOT NULL,
+    forum_slug text NOT NULL,
     forum_id integer NOT NULL,
 
     message text NOT NULL,
     votes integer DEFAULT 0, -- trigger
     slug text, --optional
-    created timestamp DEFAULT NOW(),
+    created timestamp with time zone DEFAULT NOW(),
 
     FOREIGN KEY (author) REFERENCES users(nickname),
     FOREIGN KEY (forum_id) REFERENCES forums(id)
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS posts (
     forum_id integer NOT NULL,
 
     thread_id integer NOT NULL, --fk
-    created timestamp DEFAULT NOW(),
+    created timestamp with time zone DEFAULT NOW(),
 
     FOREIGN KEY (author) REFERENCES users(nickname),
     FOREIGN KEY (forum_id) REFERENCES forums(id),

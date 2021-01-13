@@ -68,16 +68,16 @@ func (r *Repository) StoreThread(slug string, tc domain.ThreadCreate) (*domain.T
 	forumId := 0
 	err := r.db.QueryRow(context.Background(),
 		"WITH f AS (SELECT title, id FROM forums WHERE slug = $1) " +
-			"INSERT INTO threads (title, author, forum_tittle, forum_id, message, slug, created) " +
-			"VALUES ($2, $3, (SELECT title FROM f), (SELECT id FROM f), $4, $5, $6) " +
-			"RETURNING id, title, author, forum_tittle, message, slug, created, votes, (SELECT id FROM f) ",
-	slug, tc.Title, tc.Author, tc.Message, utils.RandomSlug(), utils.GetCurrentTime(tc.Created)).
+			"INSERT INTO threads (title, author, forum_slug, forum_id, message, slug, created) " +
+			"VALUES ($2, $3, $1, (SELECT id FROM f), $4, $5, $6) " +
+			"RETURNING id, title, author, forum_slug, message, slug, created, votes, (SELECT id FROM f) ",
+	slug, tc.Title, tc.Author, tc.Message, tc.Slug, utils.GetCurrentTime(tc.Created)).
 		Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Slug, &t.Created, &t.Votes, &forumId)
 
 	if err != nil {
 		config.Lg("forum_repo", "StoreThread").Info(err.Error())
 		er := r.db.QueryRow(context.Background(),
-			"SELECT id, title, author, forum_tittle, message, slug, created, votes " +
+			"SELECT id, title, author, forum_slug, message, slug, created, votes " +
 				"FROM threads " +
 				"WHERE forum_id = $1 ",
 			forumId).Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Slug, &t.Created, &t.Votes)
@@ -147,6 +147,19 @@ func (r *Repository) GetUsers(slug string, q *query.GetForumUsers) ([]domain.Use
 	return users, nil
 }
 
+func sinceCondThreads(args *[]interface{}, q *query.GetForumThreads) string {
+	if !q.Since.IsZero()  {
+		*args = append(*args, q.Since)
+		config.Lg("forum_db", "sinceCondThreads").Info("time is not zero")
+		if q.Desc {
+			return " AND created <= $3 "
+		} else {
+			return " AND created >= $3 "
+		}
+	}
+
+	return "  "
+}
 
 func (r *Repository) GetThreads(slug string, q *query.GetForumThreads) ([]domain.Thread, error) {
 	count := 0
@@ -164,14 +177,16 @@ func (r *Repository) GetThreads(slug string, q *query.GetForumThreads) ([]domain
 		return nil, domainErr.NotExists
 	}
 
+	args := []interface{}{}
+	args = append(args, slug, q.Limit)
 	rows, err := r.db.Query(context.Background(),
 		"WITH f AS (SELECT id FROM forums WHERE slug = $1) " +
-			"SELECT id, title, author, forum_title, message, votes, slug, created " +
+			"SELECT id, title, author, forum_slug, message, votes, slug, created " +
 			"FROM threads " +
-			"WHERE forum_id = (SELECT id FROM f) AND created > $2 " +
+			"WHERE forum_id = (SELECT id FROM f) " + sinceCondThreads(&args, q) +
 			"ORDER BY created " + utils.DESC(q.Desc) +
-			"LIMIT $3 ",
-		slug, q.Since, q.Limit)
+			"LIMIT $2 ",
+		args...)
 
 	// NOTE: maybe if it's DESC, you should change > to < ?
 
