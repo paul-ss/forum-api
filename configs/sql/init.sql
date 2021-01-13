@@ -9,3 +9,5 @@ create database forum_db
 ;
 
 GRANT ALL PRIVILEGES ON database forum_db TO forum_user;
+ALTER USER forum_user WITH SUPERUSER;
+--CREATE EXTENSION citext;

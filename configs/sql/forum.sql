@@ -1,6 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS citext;
+
 CREATE TABLE IF NOT EXISTS users (
     id serial NOT NULL,
-    nickname text NOT NULL PRIMARY KEY,
+    nickname CITEXT NOT NULL PRIMARY KEY,
     fullname text NOT NULL,
     about text,
     email text NOT NULL
@@ -10,12 +12,11 @@ CREATE UNIQUE INDEX email_unique_idx on users (LOWER(email));
 
 
 
-
 CREATE TABLE IF NOT EXISTS forums (
     id serial PRIMARY KEY NOT NULL,
 
     title text NOT NULL,
-    nickname text NOT NULL,
+    nickname citext NOT NULL,
     slug text NOT NULL UNIQUE,
 
     -- trigger ?
@@ -24,12 +25,15 @@ CREATE TABLE IF NOT EXISTS forums (
 
     FOREIGN KEY (nickname) REFERENCES users(nickname)
 );
+
 CREATE INDEX ON forums (slug);
+CREATE UNIQUE INDEX slug_unique_idx on forums (LOWER(slug));
+
 
 CREATE TABLE IF NOT EXISTS threads (
     id serial PRIMARY KEY NOT NULL,
     title text NOT NULL,
-    author text NOT NULL,
+    author citext NOT NULL,
 
     forum_title text NOT NULL,
     forum_id integer NOT NULL,
@@ -50,7 +54,7 @@ CREATE TABLE IF NOT EXISTS posts (
     path bigint[] NOT NULL,
 
     parent_id bigint, --  extra?
-    author text NOT NULL, -- fk
+    author citext NOT NULL, -- fk
 
     message text NOT NULL,
     isEdited bool NOT NULL DEFAULT false,
@@ -70,7 +74,7 @@ CREATE INDEX ON posts (forum_id, author);
 
 
 CREATE TABLE IF NOT EXISTS votes (
-    nickname text NOT NULL,
+    nickname citext NOT NULL,
     thread_id integer NOT NULL,
     voice integer NOT NULL,
     FOREIGN KEY (nickname) REFERENCES users(nickname),

@@ -23,16 +23,16 @@ func New(db *pgxpool.Pool) *Repository {
 func (r *Repository) StoreForum(f *domain.Forum) (*domain.Forum, error) {
 	err := r.db.QueryRow(context.Background(),
 			"INSERT INTO forums (title, nickname, slug) " +
-			"VALUES ($1, $2, $3) " +
-			"RETURNING id, posts, threads ",
-		f.Title, f.User, f.Slug).Scan(&f.Id, &f.Posts, &f.Threads)
+			"VALUES ($1, (SELECT nickname FROM users WHERE nickname = $2), $3) " +
+			"RETURNING id, posts, threads, nickname",
+		f.Title, f.User, f.Slug).Scan(&f.Id, &f.Posts, &f.Threads, &f.User)
 
 	if err != nil {
 		config.Lg("forum_repo", "StoreForum").Info(err.Error())
 		er := r.db.QueryRow(context.Background(),
 			"SELECT id, title, nickname, slug, posts, threads " +
 				"FROM forums " +
-				"WHERE slug = $1 ",
+				"WHERE LOWER(slug) = LOWER($1) ",
 			f.Slug).Scan(&f.Id, &f.Title, &f.User, &f.Slug, &f.Posts, &f.Threads)
 
 		if er != nil {
