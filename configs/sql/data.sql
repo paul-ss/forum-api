@@ -11,12 +11,12 @@ values
 
 
 
-insert into threads (id, title, author, forum_title, forum_id, message, slug)
+insert into threads (id, title, author, forum_slug, forum_id, message, slug)
 values
-(1, 'thread-title', 'username2', 'forum-title', 1, 'message', 'slug1231243234');
-insert into threads (id, title, author, forum_title, forum_id, message, slug)
+(1, 'thread-title', 'username2', 'superslug', 1, 'message', 'slug1231243234');
+insert into threads (id, title, author, forum_slug, forum_id, message, slug)
 values
-(2, 'thread-title2', 'username', 'forum-title', 1, 'message2', 'slugurhouweiur');
+(2, 'thread-title2', 'username', 'superslug', 1, 'message2', 'slugurhouweiur');
 
 
 insert into posts (id, path, parent_id, author, message, forum_id, thread_id)

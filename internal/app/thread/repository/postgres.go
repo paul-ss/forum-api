@@ -183,11 +183,11 @@ func getPostsSort(q *query.GetThreadPosts) string {
 	case "flat":
 		// desc + limit returns strange result
 		return "AND id > $2 " +
-			"ORDER BY created " + utils.DESC(q.Desc) +
+			"ORDER BY id " + utils.DESC(q.Desc) +
 			"LIMIT $3 "
 	case "tree":
 		return "AND id > $2 " +
-			"ORDER BY p.path[1] " + utils.DESC(q.Desc) +  ", p.path " +
+			"ORDER BY p.path[1] " + utils.DESC(q.Desc) +  ", p.path " + utils.DESC(q.Desc) +
 			"LIMIT $3 "
 	case "parent_tree" :
 		return "AND path[1] >= (SELECT min FROM ls)  AND path[1] <= (SELECT max FROM ls)" +
