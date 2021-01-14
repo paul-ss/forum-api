@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (forum_id) REFERENCES forums(id),
     FOREIGN KEY (thread_id) REFERENCES threads(id)
 );
---ALTER TABLE posts ALTER "id" SET DEFAULT nextval('posts_id_seq'::regclass);
+
 CREATE INDEX ON posts (forum_id, author);
 
 
@@ -91,6 +91,34 @@ CREATE TABLE IF NOT EXISTS votes (
 -- );
 
 -- ======================
+
+CREATE FUNCTION on_vote_threads() RETURNS trigger AS $on_vote_threads$
+    BEGIN
+        IF (TG_OP = 'INSERT') THEN
+            UPDATE threads
+            SET votes = CASE WHEN NEW.voice > 0 THEN votes + 1 ELSE votes - 1 END
+            WHERE id = NEW.thread_id;
+
+        ELSIF (TG_OP = 'UPDATE') THEN
+            UPDATE threads
+            SET votes = votes + NEW.voice - OLD.voice
+            WHERE id = NEW.thread_id;
+
+        END IF;
+        RETURN NULL;
+    END;
+$on_vote_threads$ LANGUAGE plpgsql;
+
+CREATE TRIGGER vote_threads
+    AFTER INSERT OR UPDATE ON votes
+    FOR EACH ROW
+    EXECUTE PROCEDURE on_vote_threads();
+
+
+
+
+
+
 
 -- CREATE TABLE IF NOT EXISTS user_forum (
 --     nickname text NOT NULL,
