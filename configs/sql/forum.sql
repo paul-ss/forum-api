@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS threads (
 
     message text NOT NULL,
     votes integer DEFAULT 0, -- trigger
-    slug text, --optional
+    slug citext unique, --optional
     created timestamp with time zone DEFAULT NOW(),
 
     FOREIGN KEY (author) REFERENCES users(nickname),

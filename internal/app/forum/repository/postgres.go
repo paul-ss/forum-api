@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
 	"github.com/paul-ss/forum-api/internal/domain"
@@ -63,33 +64,44 @@ func (r *Repository) GetForumBySlug(slug string) (*domain.Forum, error) {
 }
 
 
+func getSlug(slug string) interface{} {
+	if slug == "" {
+		return nil
+	} else {
+		return slug
+	}
+}
+
 func (r *Repository) StoreThread(slug string, tc domain.ThreadCreate) (*domain.Thread, error) {
 	t := domain.Thread{}
-	forumId := 0
+	threadSlug := sql.NullString{}
 	err := r.db.QueryRow(context.Background(),
 		"WITH f AS (SELECT title, id FROM forums WHERE slug = $1) " +
 			"INSERT INTO threads (title, author, forum_slug, forum_id, message, slug, created) " +
 			"VALUES ($2, $3, $1, (SELECT id FROM f), $4, $5, $6) " +
-			"RETURNING id, title, author, forum_slug, message, slug, created, votes, (SELECT id FROM f) ",
-	slug, tc.Title, tc.Author, tc.Message, tc.Slug, utils.GetCurrentTime(tc.Created)).
-		Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Slug, &t.Created, &t.Votes, &forumId)
+			"RETURNING id, title, author, forum_slug, message, slug, created, votes ",
+	slug, tc.Title, tc.Author, tc.Message, getSlug(tc.Slug), utils.GetCurrentTime(tc.Created)).
+		Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &threadSlug, &t.Created, &t.Votes)
 
 	if err != nil {
-		config.Lg("forum_repo", "StoreThread").Info(err.Error())
+		config.Lg("forum_repo", "StoreThread").Info("Insert: " + err.Error())
 		er := r.db.QueryRow(context.Background(),
+			"WITH f AS (SELECT id FROM forums WHERE slug = $1) " +
 			"SELECT id, title, author, forum_slug, message, slug, created, votes " +
 				"FROM threads " +
-				"WHERE forum_id = $1 ",
-			forumId).Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Slug, &t.Created, &t.Votes)
+				"WHERE forum_id = (SELECT id FROM f) ",
+			slug).Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &threadSlug, &t.Created, &t.Votes)
 
 		if er != nil {
-			config.Lg("forum_repo", "StoreThread").Error("Select: ", err.Error())
+			config.Lg("forum_repo", "StoreThread").Error("Select: ", er.Error())
 			return nil, er
 		}
 
+		t.Slug = threadSlug.String
 		return &t, domainErr.DuplicateKeyError
 	}
 
+	t.Slug = threadSlug.String
 	return &t, nil
 }
 
@@ -200,13 +212,14 @@ func (r *Repository) GetThreads(slug string, q *query.GetForumThreads) ([]domain
 	threads := []domain.Thread{}
 	for rows.Next() {
 		t := domain.Thread{}
-
-		err := rows.Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created)
+		threadSlug := sql.NullString{}
+		err := rows.Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &threadSlug, &t.Created)
 		if err != nil {
 			config.Lg("forum_repo", "GetThreads").Error("Scan: ", err.Error())
 			return nil, err
 		}
 
+		t.Slug = threadSlug.String
 		threads = append(threads, t)
 	}
 
