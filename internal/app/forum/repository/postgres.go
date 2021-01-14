@@ -76,9 +76,9 @@ func (r *Repository) StoreThread(slug string, tc domain.ThreadCreate) (*domain.T
 	t := domain.Thread{}
 	threadSlug := sql.NullString{}
 	err := r.db.QueryRow(context.Background(),
-		"WITH f AS (SELECT title, id FROM forums WHERE slug = $1) " +
+		"WITH f AS (SELECT title, id, slug FROM forums WHERE slug = $1) " +
 			"INSERT INTO threads (title, author, forum_slug, forum_id, message, slug, created) " +
-			"VALUES ($2, $3, $1, (SELECT id FROM f), $4, $5, $6) " +
+			"VALUES ($2, $3, (SELECT slug FROM f), (SELECT id FROM f), $4, $5, $6) " +
 			"RETURNING id, title, author, forum_slug, message, slug, created, votes ",
 	slug, tc.Title, tc.Author, tc.Message, getSlug(tc.Slug), utils.GetCurrentTime(tc.Created)).
 		Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &threadSlug, &t.Created, &t.Votes)
@@ -86,11 +86,10 @@ func (r *Repository) StoreThread(slug string, tc domain.ThreadCreate) (*domain.T
 	if err != nil {
 		config.Lg("forum_repo", "StoreThread").Info("Insert: " + err.Error())
 		er := r.db.QueryRow(context.Background(),
-			"WITH f AS (SELECT id FROM forums WHERE slug = $1) " +
 			"SELECT id, title, author, forum_slug, message, slug, created, votes " +
 				"FROM threads " +
-				"WHERE forum_id = (SELECT id FROM f) ",
-			slug).Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &threadSlug, &t.Created, &t.Votes)
+				"WHERE slug = $1 ",
+			tc.Slug).Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &threadSlug, &t.Created, &t.Votes)
 
 		if er != nil {
 			config.Lg("forum_repo", "StoreThread").Error("Select: ", er.Error())
