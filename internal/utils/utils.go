@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/paul-ss/forum-api/internal/domain/query"
 	"strconv"
 	"strings"
 	"time"
@@ -26,6 +27,17 @@ func DESC(d bool) string {
 		return " DESC "
 	}
 	return " "
+}
+
+func LessIfDESC(q *query.GetThreadPosts) string {
+	if q.Since > 0 {
+		if q.Desc {
+			return " < "
+		}
+		return " > "
+	} else {
+		return " > "
+	}
 }
 
 

@@ -50,7 +50,7 @@ CREATE INDEX ON threads (forum_id, author);
 
 
 CREATE TABLE IF NOT EXISTS posts (
-    id bigserial PRIMARY KEY,
+    id bigint PRIMARY KEY,
     path bigint[] NOT NULL,
 
     parent_id bigint, --  extra?
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (forum_id) REFERENCES forums(id),
     FOREIGN KEY (thread_id) REFERENCES threads(id)
 );
-
+CREATE SEQUENCE pidseq START 1;
 CREATE INDEX ON posts (forum_id, author);
 
 

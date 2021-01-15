@@ -22,7 +22,7 @@ database: {
 web: {
   server: {
     address: "localhost",
-    port: "8008",
+    port: "8000",
     host: "pinterest-tp.tk",
     protocol: "http",
   },

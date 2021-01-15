@@ -26,17 +26,17 @@ func New(db *pgxpool.Pool) *Repository {
 }
 
 func valuesPosts(i int, req []domain.PostCreate, args *[]interface{}) string {
-	query := []string{}
-	pIdxAdd := 1
+	qry := []string{}
 	for _, t := range req {
-		query = append(query,
+		qry = append(qry,
 			"( " +
+			"nextval('pidseq'), " +
 			fmt.Sprintf("(WITH par AS (SELECT path FROM posts WHERE id = $%d) ", i) +
 			"SELECT CASE WHEN ((SELECT path FROM par) IS NOT NULL) THEN " +
-			fmt.Sprintf("(SELECT path FROM par) || (last_value + %d) ", pIdxAdd) +
+			"(SELECT path FROM par) || currval('pidseq') " +
 			fmt.Sprintf("WHEN ($%d < 1) THEN ", i) +
-			fmt.Sprintf("ARRAY[last_value + %d]  ", pIdxAdd) +
-			"ELSE null END FROM seq), " +
+			"ARRAY[currval('pidseq')]  " +
+			"ELSE null END), " +
 			fmt.Sprintf("$%d, $%d, ", i + 1, i + 2) +
 			"(SELECT forum_slug FROM t), " +
 			"(SELECT forum_id FROM t), " +
@@ -45,14 +45,13 @@ func valuesPosts(i int, req []domain.PostCreate, args *[]interface{}) string {
 
 		*args = append(*args, t.Parent, t.Author, t.Message)
 		i += 3
-		pIdxAdd += 1
 	}
 
-	if len(query) > 0 {
-		query = query[:len(query) - 1]
+	if len(qry) > 0 {
+		qry = qry[:len(qry) - 1]
 	}
 
-	return strings.Join(query, "")
+	return strings.Join(qry, "")
 }
 
 func createPostSelectThread(id interface{}) string {
@@ -82,9 +81,8 @@ func (r *Repository) CreatePosts(threadId interface{}, req []domain.PostCreate) 
 	args := []interface{}{}
 	args = append(args, threadId)
 	rows, err := r.db.Query(context.Background(),
-		"WITH t AS " + createPostSelectThread(threadId) + "," +
-				"seq AS (SELECT last_value FROM posts_id_seq) " +
-			"INSERT INTO posts (path, author, message, forum_slug, forum_id, thread_id) " +
+		"WITH t AS " + createPostSelectThread(threadId) +
+			"INSERT INTO posts (id, path, author, message, forum_slug, forum_id, thread_id) " +
 			"VALUES  " + valuesPosts(2, req, &args) +
 			"RETURNING id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created ",
 			args...)
@@ -182,11 +180,11 @@ func getPostsSort(q *query.GetThreadPosts) string {
 	switch q.Sort {
 	case "flat":
 		// desc + limit returns strange result
-		return "AND id > $2 " +
+		return "AND id " + utils.LessIfDESC(q) + " $2 " +
 			"ORDER BY id " + utils.DESC(q.Desc) +
 			"LIMIT $3 "
 	case "tree":
-		return "AND id > $2 " +
+		return "AND p.path " + utils.LessIfDESC(q) + " COALESCE((SELECT pp.path FROM posts pp WHERE id = $2), ARRAY[0]) " +
 			"ORDER BY p.path[1] " + utils.DESC(q.Desc) +  ", p.path " + utils.DESC(q.Desc) +
 			"LIMIT $3 "
 	case "parent_tree" :
@@ -200,9 +198,13 @@ func getPostsSort(q *query.GetThreadPosts) string {
 func getPostsWith(q *query.GetThreadPosts) string {
 	if q.Sort == "parent_tree" {
 		return " , ls AS " +
-			"(SELECT min(id) AS min, max(id) AS max " +
-			"FROM (SELECT id FROM posts " +
-			"WHERE thread_id = (SELECT id FROM t) AND array_length(path, 1) = 1 AND id > $2 " +
+			"(WITH edge AS (SELECT COALESCE((SELECT pip.path FROM posts pip WHERE id = $2), ARRAY[0]) AS p) " +
+			"SELECT min(id) AS min, max(id) AS max " +
+			"FROM (SELECT id FROM posts pi " +
+			"WHERE thread_id = (SELECT id FROM t) AND array_length(path, 1) = 1 " +
+				"AND pi.path " + utils.LessIfDESC(q) + " (SELECT p FROM edge) " +
+				"AND pi.path[1] " + utils.LessIfDESC(q) + " (SELECT p[1] FROM edge) " +
+			"ORDER BY pi.path[1] " + utils.DESC(q.Desc) + " , pi.path " +
 			"LIMIT $3) as unused_alias) "
 	}
 
