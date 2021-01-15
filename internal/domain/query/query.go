@@ -3,6 +3,7 @@ package query
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"math"
 	"strconv"
 	"time"
 )
@@ -15,7 +16,7 @@ type GetForumUsers struct{
 }
 
 func (q *GetForumUsers) Init(c *gin.Context) error {
-	p := c.DefaultQuery("limit", "0")
+	p := c.DefaultQuery("limit", strconv.Itoa(math.MaxInt32))
 
 	limit, err := strconv.Atoi(p)
 	if err != nil {
@@ -25,7 +26,7 @@ func (q *GetForumUsers) Init(c *gin.Context) error {
 	q.Limit = int32(limit)
 
 
-	p = c.DefaultQuery("since", "0")
+	p = c.DefaultQuery("since", "")
 
 	q.Since = p
 

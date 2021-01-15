@@ -26,9 +26,9 @@ func New(uc post.IUsecase) *Delivery {
 func (d *Delivery) GetPostFull(c *gin.Context) {
 	qArr, ok := c.GetQueryArray(RelatedQuery)
 	if !ok {
-		config.Lg("post_http", "GetPostFull").Error("Can't get query array")
-		c.JSON(400, domain.Error{"Can't get query array"})
-		return
+		config.Lg("post_http", "GetPostFull").Info("Can't get query array")
+		//c.JSON(400, domain.Error{"Can't get query array"})
+		//return
 	}
 
 	id, err := utils.GetInt64Param(c, IdParam)

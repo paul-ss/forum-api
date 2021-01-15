@@ -115,9 +115,46 @@ CREATE TRIGGER vote_threads
     EXECUTE PROCEDURE on_vote_threads();
 
 
+CREATE FUNCTION on_threads_ins_upd() RETURNS trigger AS $on_threads_ins_upd$
+    BEGIN
+        IF (TG_OP = 'INSERT') THEN
+            UPDATE forums
+            SET threads = threads + (SELECT COUNT(id) FROM inserted)
+            WHERE id = (SELECT forum_id FROM inserted LIMIT 1);
+
+--         ELSIF (TG_OP = 'UPDATE') THEN
+
+        END IF;
+        RETURN NULL;
+    END;
+$on_threads_ins_upd$ LANGUAGE plpgsql;
+
+CREATE TRIGGER threads_ins_upd
+    AFTER INSERT ON threads
+    REFERENCING NEW TABLE AS inserted
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE on_threads_ins_upd();
 
 
+CREATE FUNCTION on_posts_ins_upd() RETURNS trigger AS $on_posts_ins_upd$
+    BEGIN
+        IF (TG_OP = 'INSERT') THEN
+            UPDATE forums
+            SET posts = posts + (SELECT COUNT(id) FROM inserted)
+            WHERE id = (SELECT forum_id FROM inserted LIMIT 1);
 
+--         ELSIF (TG_OP = 'UPDATE') THEN
+
+        END IF;
+        RETURN NULL;
+    END;
+$on_posts_ins_upd$ LANGUAGE plpgsql;
+
+CREATE TRIGGER posts_ins_upd
+    AFTER INSERT ON posts
+    REFERENCING NEW TABLE AS inserted
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE on_posts_ins_upd();
 
 
 -- CREATE TABLE IF NOT EXISTS user_forum (

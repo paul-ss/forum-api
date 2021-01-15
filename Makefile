@@ -2,6 +2,10 @@
 dbinit:
 	sudo -u postgres psql -f configs/sql/init.sql;
 
+.PHONY: dbclearall
+dbclearall:
+	sudo -u postgres psql -f configs/sql/clear_all.sql;
+
 
 # Create all tables
 .PHONY: dbsetup

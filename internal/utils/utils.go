@@ -40,6 +40,16 @@ func LessIfDESC(q *query.GetThreadPosts) string {
 	}
 }
 
+func LessIfDESCU(q *query.GetForumUsers) string {
+	if q.Since != "" {
+		if q.Desc {
+			return " < "
+		}
+		return " > "
+	} else {
+		return " > "
+	}
+}
 
 func GetInt64Param(c *gin.Context, param string) (int64, error) {
 	strParam, ok := c.Params.Get(param)

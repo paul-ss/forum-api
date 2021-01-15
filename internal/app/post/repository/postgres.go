@@ -21,18 +21,20 @@ func New(db *pgxpool.Pool) *Repository {
 func (r *Repository) GetPost(postId int64) (*domain.Post, error) {
 	p := domain.Post{}
 	slug := sql.NullString{}
+	parent := sql.NullInt64{}
 	err := r.db.QueryRow(context.Background(),
 		"SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created " +
 		"FROM posts " +
 		"WHERE id = $1 ",
 		postId).
-		Scan(&p.Id, &p.Parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created)
+		Scan(&p.Id, &parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created)
 
 	if err != nil {
 		config.Lg("post_repo", "GetPost").Error("Query: ", err.Error())
 		return nil, err
 	}
 
+	p.Parent = parent.Int64
 	p.ForumSlug = slug.String
 	return &p, nil
 }
@@ -96,19 +98,21 @@ func (r *Repository) GetForum(postId int64) (*domain.Forum, error) {
 func (r *Repository) UpdatePost(postId int64, rq *domain.PostUpdate) (*domain.Post, error) {
 	p := domain.Post{}
 	slug := sql.NullString{}
+	parent := sql.NullInt64{}
 	err := r.db.QueryRow(context.Background(),
 		"UPDATE posts " +
 			"SET message = $1, isEdited = true " +
 			"WHERE id = $2 " +
 			"RETURNING id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created ",
 		rq.Message, postId).
-		Scan(&p.Id, &p.Parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created)
+		Scan(&p.Id, &parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created)
 
 	if err != nil {
 		config.Lg("post_repo", "UpdatePost").Error("Query: ", err.Error())
 		return nil, err
 	}
 
+	p.Parent = parent.Int64
 	p.ForumSlug = slug.String
 	return &p, nil
 }

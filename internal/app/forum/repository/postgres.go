@@ -128,12 +128,13 @@ func (r *Repository) GetUsers(slug string, q *query.GetForumUsers) ([]domain.Use
 		"UNION " +
 		"SELECT DISTINCT author FROM posts WHERE forum_id = (SELECT id from f)) AS a " +
 		"JOIN users u ON a.author = u.nickname " +
-		"WHERE lower(nickname) > lower ($2)" +
-		"ORDER BY lower(nickname) " + utils.DESC(q.Desc) +
+		"WHERE nickname " + utils.LessIfDESCU(q) + " $2 COLLATE \"C\" " +
+		"ORDER BY nickname COLLATE \"C\" " + utils.DESC(q.Desc) +
 		"LIMIT ($3) ",
 		slug, q.Since, q.Limit)
 
 	// NOTE: maybe if it's DESC, you should change > to < ?
+	config.Lg("forum_repo", "GetUsers").Info("lessIf: " + utils.LessIfDESCU(q))
 
 	if err != nil {
 		config.Lg("forum_repo", "GetUsers").Error("Query: ", err.Error())

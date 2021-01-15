@@ -26,21 +26,21 @@ func (uc *Usecase) GetPostFull(postId int64, related []string) (*domain.PostFull
 				config.Lg("post_uc", "GetPostFull").Error("GetAuthor : " + err.Error())
 				return nil, err
 			}
-			resp.Author = *u
+			resp.Author = u
 		case "forum":
 			f, err := uc.db.GetForum(postId)
 			if err != nil {
 				config.Lg("post_uc", "GetPostFull").Error("GetForum : " + err.Error())
 				return nil, err
 			}
-			resp.Forum = *f
+			resp.Forum = f
 		case "thread":
 			t, err := uc.db.GetThread(postId)
 			if err != nil {
 				config.Lg("post_uc", "GetPostFull").Error("GetThread : " + err.Error())
 				return nil, err
 			}
-			resp.Thread = *t
+			resp.Thread = t
 		}
 	}
 
@@ -49,7 +49,7 @@ func (uc *Usecase) GetPostFull(postId int64, related []string) (*domain.PostFull
 		config.Lg("post_uc", "GetPostFull").Error("GetPost : " + err.Error())
 		return nil, err
 	}
-	resp.Post = *p
+	resp.Post = p
 
 	return &resp, nil
 }
