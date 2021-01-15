@@ -163,9 +163,45 @@ func (r *Repository) UpdateUser(username string, req *domain.UserUpdate) (*domai
 // STATS ====
 
 func (r *Repository) ClearAll() error {
-	if _, err := r.db.Exec(context.Background(),
-		"TRUNCATE TABLE users, forums, threads, posts, votes, stats "); err != nil {
+	tx, err := r.db.Begin(context.Background())
+	if err != nil {
+		config.Lg("user_repo", "ClearAll").Error("Begin : ", err.Error())
+		return err
+	}
+	defer tx.Rollback(context.Background())
+
+	if _, err := tx.Exec(context.Background(),
+		"TRUNCATE TABLE users, forums, threads, posts, votes "); err != nil {
 		config.Lg("user_repo", "ClearAll").Error("Exec : ", err.Error())
+		return err
+	}
+
+	if _, err := tx.Exec(context.Background(),
+		"ALTER SEQUENCE users_id_seq RESTART WITH 1 "); err != nil {
+		config.Lg("user_repo", "ClearAll").Error("Exec 2 : ", err.Error())
+		return err
+	}
+
+	if _, err := tx.Exec(context.Background(),
+		"ALTER SEQUENCE forums_id_seq RESTART WITH 1 "); err != nil {
+		config.Lg("user_repo", "ClearAll").Error("Exec 3 : ", err.Error())
+		return err
+	}
+
+	if _, err := tx.Exec(context.Background(),
+		"ALTER SEQUENCE threads_id_seq RESTART WITH 1 "); err != nil {
+		config.Lg("user_repo", "ClearAll").Error("Exec 4 : ", err.Error())
+		return err
+	}
+
+	if _, err := tx.Exec(context.Background(),
+		"ALTER SEQUENCE pidseq RESTART WITH 1 "); err != nil {
+		config.Lg("user_repo", "ClearAll").Error("Exec 5 : ", err.Error())
+		return err
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		config.Lg("user_repo", "ClearAll").Error("Commit : ", err.Error())
 		return err
 	}
 

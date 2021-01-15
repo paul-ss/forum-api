@@ -22,7 +22,7 @@ type PostCreate struct {
 }
 
 type PostUpdate struct {
-	Message string `json:"message"`
+	Message *string `json:"message"`
 }
 
 type PostFull struct {

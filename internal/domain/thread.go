@@ -22,6 +22,6 @@ type ThreadCreate struct {
 }
 
 type ThreadUpdate struct {
-	Title string `json:"title"`
-	Message string `json:"message"`
+	Title *string `json:"title"`
+	Message *string `json:"message"`
 }

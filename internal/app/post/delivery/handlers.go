@@ -6,6 +6,7 @@ import (
 	"github.com/paul-ss/forum-api/internal/app/post"
 	"github.com/paul-ss/forum-api/internal/domain"
 	"github.com/paul-ss/forum-api/internal/utils"
+	"strings"
 )
 
 const (
@@ -23,13 +24,35 @@ func New(uc post.IUsecase) *Delivery {
 	}
 }
 
-func (d *Delivery) GetPostFull(c *gin.Context) {
-	qArr, ok := c.GetQueryArray(RelatedQuery)
-	if !ok {
-		config.Lg("post_http", "GetPostFull").Info("Can't get query array")
-		//c.JSON(400, domain.Error{"Can't get query array"})
-		//return
+
+func findQueryRelated(url string) []string {
+	res := []string{}
+	if strings.Contains(url, RelatedQuery + "=") {
+		if strings.Contains(url, "user") {
+			res = append(res, "user")
+		}
+		if strings.Contains(url, "forum") {
+			res = append(res, "forum")
+		}
+		if strings.Contains(url, "thread") {
+			res = append(res, "thread")
+		}
 	}
+
+	return res
+}
+
+func (d *Delivery) GetPostFull(c *gin.Context) {
+	config.Lg("post_http", "GetPostFull").Info("Query: " + c.Request.URL.String())
+
+	//qArr, ok := c.GetQueryArray(RelatedQuery)
+	//if !ok {
+	//	config.Lg("post_http", "GetPostFull").Info("Can't get query array")
+	//	//c.JSON(400, domain.Error{"Can't get query array"})
+	//	//return
+	//}
+
+	qArr := findQueryRelated(c.Request.URL.String())
 
 	id, err := utils.GetInt64Param(c, IdParam)
 	if err != nil {

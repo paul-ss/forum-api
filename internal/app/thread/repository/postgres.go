@@ -168,15 +168,43 @@ func (r *Repository) GetThread(threadId interface{}) (*domain.Thread, error) {
 	return &t, nil
 }
 
+
+func updateThreadFields(args *[]interface{}, req *domain.ThreadUpdate, startIdx int) string {
+	query := []string{}
+	if req.Message != nil {
+		query = append(query, fmt.Sprintf(" message = $%d ", startIdx), ", ")
+		startIdx += 1
+		*args = append(*args, *req.Message)
+	}
+
+	if req.Title != nil {
+		query = append(query, fmt.Sprintf(" title = $%d ", startIdx), ", ")
+		startIdx += 1
+		*args = append(*args, *req.Title)
+	}
+
+
+	if len(query) == 0 {
+		query = append(query, " title = title ")
+	} else {
+		query = query[:len(query)-1]
+	}
+
+	return strings.Join(query, "")
+}
+
+
 func (r *Repository) UpdateThread(threadId interface{}, req *domain.ThreadUpdate) (*domain.Thread, error) {
 	t := domain.Thread{}
 	threadSlug := sql.NullString{}
+	args := []interface{}{}
+	args = append(args, threadId)
 	err := r.db.QueryRow(context.Background(),
 		"UPDATE threads " +
-		"SET title = $1, message = $2 " +
-		getThreadCond(threadId, 3) +
+		"SET " + updateThreadFields(&args, req, 2) +
+		getThreadCond(threadId, 1) +
 		"RETURNING id, title, author, forum_slug, message, votes, slug, created ",
-		req.Title, req.Message, threadId).
+		args...).
 		Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &threadSlug, &t.Created)
 
 	if err != nil {

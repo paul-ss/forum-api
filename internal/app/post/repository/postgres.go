@@ -3,9 +3,11 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	config "github.com/paul-ss/forum-api/configs/go"
 	"github.com/paul-ss/forum-api/internal/domain"
+	"strings"
 )
 
 type Repository struct {
@@ -95,16 +97,34 @@ func (r *Repository) GetForum(postId int64) (*domain.Forum, error) {
 	return &f, nil
 }
 
+
+func updatePostFields(args *[]interface{}, req *domain.PostUpdate, startIdx int) string {
+	query := []string{}
+	if req.Message != nil {
+		query = append(query, fmt.Sprintf(" isEdited = message <> $%d, message = $%d ", startIdx, startIdx))
+		startIdx += 1
+		*args = append(*args, *req.Message)
+	}
+
+	if len(query) == 0 {
+		query = append(query, " message = message ")
+	}
+
+	return strings.Join(query, "")
+}
+
 func (r *Repository) UpdatePost(postId int64, rq *domain.PostUpdate) (*domain.Post, error) {
 	p := domain.Post{}
 	slug := sql.NullString{}
 	parent := sql.NullInt64{}
+	args := []interface{}{}
+	args = append(args, postId)
 	err := r.db.QueryRow(context.Background(),
 		"UPDATE posts " +
-			"SET message = $1, isEdited = true " +
-			"WHERE id = $2 " +
+			"SET " + updatePostFields(&args, rq, 2) +
+			"WHERE id = $1 " +
 			"RETURNING id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created ",
-		rq.Message, postId).
+		args...).
 		Scan(&p.Id, &parent, &p.Author, &p.Message, &p.IsEdited, &slug, &p.ThreadId, &p.Created)
 
 	if err != nil {
