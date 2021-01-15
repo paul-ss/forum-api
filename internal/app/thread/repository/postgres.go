@@ -31,8 +31,10 @@ func valuesPosts(i int, req []domain.PostCreate, args *[]interface{}) string {
 		qry = append(qry,
 			"( " +
 			"nextval('pidseq'), " +
-			fmt.Sprintf("(WITH par AS (SELECT path FROM posts WHERE id = $%d) ", i) +
-			"SELECT CASE WHEN ((SELECT path FROM par) IS NOT NULL) THEN " +
+			fmt.Sprintf("(WITH par AS (SELECT path, thread_id FROM posts WHERE id = $%d) ", i) +
+			"SELECT CASE " +
+			"WHEN (SELECT thread_id FROM par) <> (SELECT id FROM t) THEN null " +
+			"WHEN ((SELECT path FROM par) IS NOT NULL) THEN " +
 			"(SELECT path FROM par) || currval('pidseq') " +
 			fmt.Sprintf("WHEN ($%d < 1) THEN ", i) +
 			"ARRAY[currval('pidseq')]  " +
@@ -62,6 +64,14 @@ func createPostSelectThread(id interface{}) string {
 	 }
 }
 
+func createPostSelectThreadId(id interface{}) string {
+	if _, ok := id.(string); ok {
+		return "(SELECT id FROM threads WHERE slug = $1)"
+	} else {
+		return "(SELECT id FROM threads WHERE id = $1)"
+	}
+}
+
 func createPostError(err error) error {
 	pErr := err.(*pgconn.PgError)
 
@@ -74,6 +84,18 @@ func createPostError(err error) error {
 }
 
 func (r *Repository) CreatePosts(threadId interface{}, req []domain.PostCreate) ([]domain.Post, error) {
+	count := 0
+	if err := r.db.QueryRow(context.Background(),
+			"SELECT COUNT(*) FROM threads WHERE id = " + createPostSelectThreadId(threadId),
+			threadId).Scan(&count); err != nil {
+		return nil, err
+	}
+
+	if count == 0 {
+		return nil, domainErr.ThreadNotExists
+	}
+
+
 	if len(req) == 0 {
 		return []domain.Post{}, nil
 	}

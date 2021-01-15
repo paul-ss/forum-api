@@ -8,4 +8,5 @@ var (
 	ThreadNotExists = errors.New("Thread not exists")
 	PostNotExists = errors.New("Post not exists")
 	AlreadyExists = errors.New("Already exists exists")
+	EmptyReq = errors.New("Empty Request")
 )

@@ -46,6 +46,8 @@ func (d *Delivery) CreatePosts(c *gin.Context) {
 			c.JSON(409, domain.Error{err.Error()})
 		case domainErr.ThreadNotExists:
 			c.JSON(404, domain.Error{err.Error()})
+		case domainErr.EmptyReq:
+			c.JSON(404, domain.Error{err.Error()})
 		default:
 			c.JSON(500, domain.Error{err.Error()})
 		}

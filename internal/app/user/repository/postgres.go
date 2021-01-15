@@ -181,7 +181,7 @@ func (r *Repository) GetStats() (*domain.Status, error) {
 				"CASE WHEN f.is_called THEN f.last_value ELSE 0 END, " +
 				"CASE WHEN t.is_called THEN t.last_value ELSE 0 END, " +
 				"CASE WHEN p.is_called THEN p.last_value ELSE 0 END " +
-			"FROM users_id_seq u, forums_id_seq f, threads_id_seq t, posts_id_seq p ").
+			"FROM users_id_seq u, forums_id_seq f, threads_id_seq t, pidseq p ").
 		Scan(&s.User, &s.Forum, &s.Thread, &s.Post)
 
 	if err != nil {
