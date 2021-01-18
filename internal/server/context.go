@@ -46,7 +46,7 @@ func setupGinLogger() *os.File {
 	case "debug":
 		gin.SetMode(gin.DebugMode)
 	default:
-		gin.SetMode(gin.DebugMode)
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	if !config.Conf.Logger.StdoutLog {

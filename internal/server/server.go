@@ -31,6 +31,10 @@ func New() *Server {
 
 	r := gin.Default()
 
+	if config.Conf.Logger.GinLevel == "release" {
+		r = gin.New()
+	}
+
 	api := r.Group("/api")
 
 	delivery.CreateUserDelivery(ctx.db.DbPool, api)

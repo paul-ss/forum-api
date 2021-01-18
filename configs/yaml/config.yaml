@@ -7,15 +7,6 @@ database: {
     ssl_mode: "disable",
     host: "localhost",
     max_conn: 10
-  },
-  test: {
-    driver_name: "postgres",
-    username: "pinterest_user",
-    password: "662f2710-4e08-4be7-a278-a53ae86ba7f6",
-    db_name: "pinterest_db_test",
-    ssl_mode: "disable",
-    host: "localhost",
-    max_conn: 10
   }
 }
 
@@ -26,64 +17,13 @@ web: {
     host: "pinterest-tp.tk",
     protocol: "http",
   },
-  chat_srv: {
-    address: "localhost",
-    port: "8000",
-    host: "pinterest-tp.tk",
-    protocol: "http",
-  },
-  static: {
-    dir_img: "static/img",
-    url_img: "/static/img",
-    dir_avt: "/static/avatar/",
-  },
-  search: {
-    address: "localhost",
-    port: "8001",
-    host: "pinterest-tp.tk",
-    protocol: "tcp",
-  },
-  auth: {
-    address: "localhost",
-    port: "8002",
-    host: "pinterest-tp.tk",
-    protocol: "tcp",
-  },
 }
 
-monitoring: {
-  main: {
-    address: "localhost",
-    port: "7007",
-    host: "pinterest-tp.tk",
-  },
-  search: {
-    address: "localhost",
-    port: "7008",
-    host: "pinterest-tp.tk",
-  },
-  auth: {
-    address: "localhost",
-    port: "7009",
-    host: "pinterest-tp.tk",
-  },
-  chat: {
-    address: "localhost",
-    port: "7010",
-    host: "pinterest-tp.tk",
-  },
-}
-
-token: {
-  secretname: "SECRET",
-  cookiename: "eternity",
-  value: 7,
-}
 
 logger: {
   gin_file:  "/var/log/pinterest/gin.log",
   gin_level: "debug",  # (release|test|debug)
   common_file: "/var/log/pinterest/common.log",
-  common_level: "debug",  # (panic|fatal|error|warn|info|debug|trace)
+  common_level: "error",  # (panic|fatal|error|warn|info|debug|trace)
   stdout_log: "true",
 }
