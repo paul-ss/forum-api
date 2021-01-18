@@ -70,7 +70,10 @@ CREATE TABLE IF NOT EXISTS posts (
     FOREIGN KEY (thread_id) REFERENCES threads(id)
 );
 CREATE SEQUENCE pidseq START 1;
+
 CREATE INDEX ON posts (forum_id, author);
+CREATE UNIQUE INDEX ON posts (path);
+CREATE INDEX ON posts (path[1]);
 
 
 CREATE TABLE IF NOT EXISTS votes (
