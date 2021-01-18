@@ -68,7 +68,7 @@ func createPostSelectThreadId(id interface{}) string {
 	if _, ok := id.(string); ok {
 		return "(SELECT id FROM threads WHERE slug = $1)"
 	} else {
-		return "(SELECT id FROM threads WHERE id = $1)"
+		return "(SELECT CAST($1 AS integer) AS id)"
 	}
 }
 
@@ -357,14 +357,17 @@ func (r *Repository) VoteThread(threadId interface{}, req *domain.Vote) (*domain
 	}
 
 	t := domain.Thread{}
+	slug := sql.NullString{}
 	if err := tx.QueryRow(context.Background(),
 		"SELECT id, title, author, forum_slug, message, votes, slug, created " +
 			"FROM threads " +
 			"WHERE id = $1 ", thrIdInt).
-			Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &t.Slug, &t.Created); err != nil {
+			Scan(&t.Id, &t.Title, &t.Author, &t.Forum, &t.Message, &t.Votes, &slug, &t.Created); err != nil {
 		config.Lg("thread_repo", "VoteThread").Error("Query 2: " + err.Error())
 		return nil, err
 	}
+
+	t.Slug = slug.String
 
 	if err := tx.Commit(context.Background()); err != nil {
 		config.Lg("thread_repo", "VoteThread").Error("Commit: " + err.Error())
