@@ -46,12 +46,16 @@ CREATE TABLE IF NOT EXISTS threads (
     FOREIGN KEY (author) REFERENCES users(nickname),
     FOREIGN KEY (forum_id) REFERENCES forums(id)
 );
-CREATE INDEX ON threads (forum_id, author);
+
+--CREATE INDEX ON threads (forum_id, author);
+
+CREATE INDEX ON threads (created);
 
 
 CREATE TABLE IF NOT EXISTS posts (
     id bigint PRIMARY KEY,
     path bigint[] NOT NULL,
+  --  path1 bigint NOT NULL,
 
     parent_id bigint, --  extra?
     author citext NOT NULL, -- fk
@@ -73,7 +77,7 @@ CREATE SEQUENCE pidseq START 1;
 
 CREATE INDEX ON posts (forum_id, author);
 CREATE UNIQUE INDEX ON posts (path);
-CREATE INDEX ON posts (path[1]);
+CREATE INDEX ON posts (path1);
 
 
 CREATE TABLE IF NOT EXISTS votes (

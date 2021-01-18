@@ -235,7 +235,7 @@ func getPostsSort(q *query.GetThreadPosts) string {
 			"LIMIT $3 "
 	case "tree":
 		return "AND p.path " + utils.LessIfDESC(q) + " COALESCE((SELECT pp.path FROM posts pp WHERE id = $2), ARRAY[0]) " +
-			"ORDER BY p.path[1] " + utils.DESC(q.Desc) +  ", p.path " + utils.DESC(q.Desc) +
+			"ORDER BY p.path " + utils.DESC(q.Desc) +
 			"LIMIT $3 "
 	case "parent_tree" :
 		return "AND path[1] >= (SELECT min FROM ls)  AND path[1] <= (SELECT max FROM ls)" +
