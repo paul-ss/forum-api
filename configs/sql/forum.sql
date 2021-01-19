@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS threads (
 --CREATE INDEX ON threads (forum_id, author);
 
 CREATE INDEX ON threads (created);
+CREATE INDEX threads_author ON threads(author);
 
 
 CREATE TABLE IF NOT EXISTS posts (
@@ -76,8 +77,10 @@ CREATE TABLE IF NOT EXISTS posts (
 CREATE SEQUENCE pidseq START 1;
 
 CREATE INDEX ON posts (forum_id, author);
-CREATE UNIQUE INDEX ON posts (path);
-CREATE INDEX ON posts (path1);
+CREATE INDEX ON posts USING GIN(path);
+CREATE INDEX posts_author ON posts (author);
+CREATE INDEX posts_author_forum_id ON posts (author, forum_id);
+--CREATE INDEX ON posts (path1);
 
 
 CREATE TABLE IF NOT EXISTS votes (
@@ -90,12 +93,6 @@ CREATE TABLE IF NOT EXISTS votes (
 );
 
 
--- CREATE TABLE IF NOT EXISTS stats (
---     usr integer NOT NULL DEFAULT 0,
---     forum integer NOT NULL DEFAULT 0,
---     thread integer NOT NULL DEFAULT 0,
---     post bigint NOT NULL DEFAULT 0
--- );
 
 -- ======================
 
@@ -163,28 +160,3 @@ CREATE TRIGGER posts_ins_upd
     FOR EACH STATEMENT
     EXECUTE PROCEDURE on_posts_ins_upd();
 
-
--- CREATE TABLE IF NOT EXISTS user_forum (
---     nickname text NOT NULL,
---     forum_id integer NOT NULL,
---     FOREIGN KEY (nickname) REFERENCES users(nickname),
---     FOREIGN KEY (forum_id) REFERENCES forums(id),
---     UNIQUE(nickname, forum_id)
--- );
--- CREATE INDEX ON user_forum (nickname);
---
---
--- CREATE TRIGGER insert_user_forum
---     AFTER INSERT ON threads
---     FOR EACH ROW
---     EXECUTE PROCEDURE on_change_threads();
---
--- CREATE FUNCTION on_change_threads() RETURNS trigger AS $on_change_threads$
---     BEGIN
---         IF (TG_OP = 'INSERT') THEN
---             INSERT INTO user_forum (nickname, forum_id)
---             VALUES (NEW.author, NEW.forum_id);
---         END IF;
---         RETURN NULL;
---     END;
--- $on_change_threads$ LANGUAGE plpgsql;
