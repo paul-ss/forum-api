@@ -79,6 +79,7 @@ CREATE SEQUENCE pidseq START 1;
 
 CREATE INDEX ON posts (forum_id, author);
 CREATE INDEX fk_thread_id ON posts (thread_id);
+CREATE INDEX fk_thread_id_id ON posts (thread_id, id);   -- was only thread_id, maybe it's extra (no better)
 CREATE INDEX ON posts /*USING GIN*/(thread_id, path);
 --CREATE INDEX posts_author ON posts (author);
 --CREATE INDEX posts_author_forum_id ON posts (author, forum_id);
