@@ -121,16 +121,14 @@ func (r *Repository) GetUsers(slug string, q *query.GetForumUsers) ([]domain.Use
 	}
 
 	rows, err := r.db.Query(context.Background(),
-		"WITH f AS (SELECT title, id FROM forums WHERE slug = $1) " +
+		"WITH f AS (SELECT id FROM forums WHERE slug = $1) " +
 		"SELECT u.nickname, u.fullname, u.about, u.email " +
 		"FROM " +
-		"(SELECT DISTINCT author FROM threads WHERE forum_id = (SELECT id from f) " +
-		"UNION " +
-		"SELECT DISTINCT author FROM posts WHERE forum_id = (SELECT id from f)) AS a " +
-		"JOIN users u ON a.author = u.nickname " +
-		"WHERE nickname " + utils.LessIfDESCU(q) + " $2 " +
-		"ORDER BY nickname " + utils.DESC(q.Desc) +
-		"LIMIT ($3) ",
+		"forum_user fu " +
+		"JOIN users u ON fu.nickname = u.nickname " +
+		"WHERE fu.forum_id = (SELECT id FROM f) AND fu.nickname " + utils.LessIfDESCU(q) + " $2 " +
+		"ORDER BY fu.nickname " + utils.DESC(q.Desc) +
+		"LIMIT $3 ",
 		slug, q.Since, q.Limit)
 
 	// NOTE: maybe if it's DESC, you should change > to < ?

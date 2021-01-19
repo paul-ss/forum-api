@@ -171,7 +171,7 @@ func (r *Repository) ClearAll() error {
 	defer tx.Rollback(context.Background())
 
 	if _, err := tx.Exec(context.Background(),
-		"TRUNCATE TABLE users, forums, threads, posts, votes "); err != nil {
+		"TRUNCATE TABLE forum_user, users, forums, threads, posts, votes "); err != nil {
 		config.Lg("user_repo", "ClearAll").Error("Exec : ", err.Error())
 		return err
 	}
