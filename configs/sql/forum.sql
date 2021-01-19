@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS forums (
     FOREIGN KEY (nickname) REFERENCES users(nickname)
 );
 
-CREATE INDEX ON forums (slug);
+CREATE INDEX fk_nickname ON forums (nickname);
 
 
 
@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS threads (
 --CREATE INDEX ON threads (forum_id, author);
 
 CREATE INDEX ON threads (created);
-CREATE INDEX threads_author ON threads(author);
+CREATE INDEX fk_threads_author ON threads(author);
+CREATE INDEX fk_forum_id ON threads(forum_id);
 
 
 CREATE TABLE IF NOT EXISTS posts (
@@ -77,9 +78,10 @@ CREATE TABLE IF NOT EXISTS posts (
 CREATE SEQUENCE pidseq START 1;
 
 CREATE INDEX ON posts (forum_id, author);
-CREATE INDEX ON posts USING GIN(path);
-CREATE INDEX posts_author ON posts (author);
-CREATE INDEX posts_author_forum_id ON posts (author, forum_id);
+CREATE INDEX fk_thread_id ON posts (thread_id);
+CREATE INDEX ON posts /*USING GIN*/(thread_id, path);
+--CREATE INDEX posts_author ON posts (author);
+--CREATE INDEX posts_author_forum_id ON posts (author, forum_id);
 --CREATE INDEX ON posts (path1);
 
 
@@ -92,6 +94,16 @@ CREATE TABLE IF NOT EXISTS votes (
     UNIQUE (thread_id, nickname)
 );
 
+
+CREATE TABLE IF NOT EXISTS forum_user(
+    nickname citext NOT NULL,
+    forum_id integer NOT NULL,
+    FOREIGN KEY (nickname) REFERENCES users(nickname),
+    FOREIGN KEY (forum_id) REFERENCES forums(id),
+    UNIQUE (forum_id, nickname)
+);
+
+--CREATE UNIQUE INDEX forum_user_id_nickname ON forum_user (forum_id, nickname);
 
 
 -- ======================
@@ -126,6 +138,11 @@ CREATE FUNCTION on_threads_ins_upd() RETURNS trigger AS $on_threads_ins_upd$
             SET threads = threads + (SELECT COUNT(id) FROM inserted)
             WHERE id = (SELECT forum_id FROM inserted LIMIT 1);
 
+            WITH f AS (SELECT forum_id FROM inserted LIMIT 1)
+            INSERT INTO forum_user (nickname, forum_id)
+            SELECT author, (SELECT forum_id FROM f) FROM inserted
+            ON CONFLICT DO NOTHING;
+
 --         ELSIF (TG_OP = 'UPDATE') THEN
 
         END IF;
@@ -146,6 +163,11 @@ CREATE FUNCTION on_posts_ins_upd() RETURNS trigger AS $on_posts_ins_upd$
             UPDATE forums
             SET posts = posts + (SELECT COUNT(id) FROM inserted)
             WHERE id = (SELECT forum_id FROM inserted LIMIT 1);
+
+            WITH f AS (SELECT forum_id FROM inserted LIMIT 1)
+            INSERT INTO forum_user (nickname, forum_id)
+            SELECT author, (SELECT forum_id FROM f) FROM inserted
+            ON CONFLICT DO NOTHING;
 
 --         ELSIF (TG_OP = 'UPDATE') THEN
 
