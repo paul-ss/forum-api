@@ -12,8 +12,8 @@ database: {
 
 web: {
   server: {
-    address: "localhost",
-    port: "8000",
+    address: "0.0.0.0",
+    port: "5000",
     host: "pinterest-tp.tk",
     protocol: "http",
   },
