@@ -16,12 +16,6 @@ MAINTAINER Pavel Smirnov
 
 RUN mkdir /opt/forum-api
 
-# Make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
-#RUN apt-get -y update && apt-get install -y locales gnupg2
-#RUN locale-gen en_US.UTF-8
-#RUN update-locale LANG=en_US.UTF-8
-
-
 # install Postgres
 ENV PGVER 12
 ENV DEBIAN_FRONTEND noninteractive
@@ -39,8 +33,6 @@ WORKDIR /opt/forum-api
 
 
 RUN /etc/init.d/postgresql start &&\
-#    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
-#    createdb -E UTF8 docker &&\
     psql -f configs/sql/init.sql &&\
     make dbsetupc &&\
     /etc/init.d/postgresql stop
@@ -48,7 +40,7 @@ RUN /etc/init.d/postgresql start &&\
 RUN echo "listen_addresses='*'\n" >> /etc/postgresql/$PGVER/main/postgresql.conf
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
 
-# Expose the PostgreSQL port
+
 
 # Add VOLUMEs to allow backup of config, logs and databases
 VOLUME ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
