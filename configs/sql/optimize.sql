@@ -1,5 +1,5 @@
 
-ANALYZE;
+ANALYZE ;
 
 WITH t AS (SELECT id FROM threads WHERE id = 6953)
 		SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created,
