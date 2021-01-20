@@ -1,6 +1,8 @@
 
 ANALYZE ;
+ANALYZE posts;
 
+EXPLAIN ANALYZE
 WITH t AS (SELECT id FROM threads WHERE id = 6953)
 		SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created,
 			CASE WHEN (SELECT id FROM t) IS NOT NULL THEN 1 ELSE 0 END as exists
@@ -27,9 +29,9 @@ WITH t AS (SELECT id FROM threads WHERE id = 6953),
     SELECT min(id) AS min, max(id) AS max
     FROM (SELECT id FROM posts pi
     WHERE thread_id = (SELECT id FROM t) AND array_length(path, 1) = 1
-    AND pi.path  > (SELECT p FROM edge)
-    AND pi.path[1] > (SELECT p[1] FROM edge)
-    ORDER BY pi.path[1] , pi.path
+    AND pi.path  < (SELECT p FROM edge)
+    AND pi.path[1] < (SELECT p[1] FROM edge)
+    ORDER BY pi.path[1] desc , pi.path
     LIMIT 10000) as unused_alias)
 
 SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_slug, thread_id, created,
@@ -37,4 +39,7 @@ SELECT id, path[(array_length(path, 1) - 1)], author, message, isEdited, forum_s
 FROM posts p
 WHERE thread_id = (SELECT id FROM t)
     AND path[1] >= (SELECT min FROM ls)  AND path[1] <= (SELECT max FROM ls)
-ORDER BY p.path[1], p.path
+ORDER BY p.path[1], p.path;
+
+
+SELECT thread_id, COUNT(thread_id) FROM posts GROUP BY thread_id ORDER BY COUNT(thread_id) LIMIT 10;
